@@ -7,9 +7,9 @@ package context
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/omec-project/pfcp/pfcpType"
-	"github.com/omec-project/util/util_3gpp"
 )
 
 const (
@@ -23,7 +23,7 @@ type RuleState uint8
 
 // Packet Detection Rule. Table 7.5.2.2-1
 type PDR struct {
-	OuterHeaderRemoval *pfcpType.OuterHeaderRemoval
+	OuterHeaderRemoval *OuterHeaderRemoval
 
 	FAR *FAR
 	URR *URR
@@ -37,12 +37,45 @@ type PDR struct {
 
 // Packet Detection. 7.5.2.2-2
 type PDI struct {
-	LocalFTeid      *pfcpType.FTEID
-	UEIPAddress     *pfcpType.UEIPAddress
-	SDFFilter       *pfcpType.SDFFilter
+	LocalFTeid      *FTEID
+	UEIPAddress     *UEIPAddress
+	SDFFilter       *SDFFilter
 	ApplicationID   string
-	NetworkInstance util_3gpp.Dnn
-	SourceInterface pfcpType.SourceInterface
+	NetworkInstance string
+	SourceInterface uint8
+}
+
+// F-TEID.
+type FTEID struct {
+	Flags uint8
+	Teid  uint32
+	V4    net.IP
+	V6    net.IP
+	Chid  uint8
+}
+
+// UE IP Address.
+type UEIPAddress struct {
+	Flags uint8
+	V4    string
+	V6    string
+	V6d   uint8
+	V6pl  uint8
+}
+
+// SDFFilter
+type SDFFilter struct {
+	Fd  string
+	Ttc string
+	Spi string
+	Fl  string
+	Fid uint32
+}
+
+// Outer Header Removal.
+type OuterHeaderRemoval struct {
+	Desc uint8
+	Ext  uint8
 }
 
 // Forwarding Action Rule. 7.5.2.3-1
@@ -53,16 +86,34 @@ type FAR struct {
 	State RuleState
 	FARID uint32
 
-	ApplyAction pfcpType.ApplyAction
+	ApplyAction *ApplyAction
+}
+
+type ApplyAction struct {
+	Dupl bool
+	Nocp bool
+	Buff bool
+	Forw bool
+	Drop bool
 }
 
 // Forwarding Parameters. 7.5.2.3-2
 type ForwardingParameters struct {
-	OuterHeaderCreation  *pfcpType.OuterHeaderCreation
+	OuterHeaderCreation  *OuterHeaderCreation
 	PFCPSMReqFlags       *pfcpType.PFCPSMReqFlags
 	ForwardingPolicyID   string
-	NetworkInstance      util_3gpp.Dnn
-	DestinationInterface pfcpType.DestinationInterface
+	NetworkInstance      string
+	DestinationInterface uint8
+}
+
+type OuterHeaderCreation struct {
+	Desc uint16
+	Teid uint32
+	V4   string
+	V6   string
+	Port uint16
+	Ctag uint32
+	Stag uint32
 }
 
 // Buffering Action Rule 7.5.2.6-1

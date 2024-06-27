@@ -33,6 +33,7 @@ import (
 	"github.com/omec-project/smf/msgtypes/pfcpmsgtypes"
 	"github.com/omec-project/smf/pfcp/adapter"
 	"github.com/omec-project/smf/pfcp/udp"
+	"github.com/wmnsk/go-pfcp/message"
 )
 
 var seq uint32
@@ -280,7 +281,7 @@ func SendPfcpSessionEstablishmentRequest(
 	ctx *smf_context.SMContext,
 	pdrList []*smf_context.PDR, farList []*smf_context.FAR, barList []*smf_context.BAR, qerList []*smf_context.QER, upfPort uint16,
 ) {
-	pfcpMsg, err := BuildPfcpSessionEstablishmentRequest(upNodeID, ctx, pdrList, farList, barList, qerList)
+	pfcpMsg, err := BuildPfcpSessionEstablishmentRequest(upNodeID, ctx, pdrList, farList, barList, qerList, 0, getSeqNumber(), 0)
 	if err != nil {
 		ctx.SubPfcpLog.Errorf("Build PFCP Session Establishment Request failed: %v", err)
 		return
@@ -288,18 +289,18 @@ func SendPfcpSessionEstablishmentRequest(
 	logger.PfcpLog.Debugf("in SendPfcpSessionEstablishmentRequest pfcpMsg.CPFSEID.Seid %v\n", pfcpMsg.CPFSEID.Seid)
 	ip := upNodeID.ResolveNodeIdToIp()
 
-	message := pfcp.Message{
-		Header: pfcp.Header{
-			Version:         pfcp.PfcpVersion,
-			MP:              1,
-			S:               pfcp.SEID_PRESENT,
-			MessageType:     pfcp.PFCP_SESSION_ESTABLISHMENT_REQUEST,
-			SEID:            0,
-			SequenceNumber:  getSeqNumber(),
-			MessagePriority: 0,
-		},
-		Body: pfcpMsg,
-	}
+	// message := pfcp.Message{
+	// 	Header: pfcp.Header{
+	// 		Version:         pfcp.PfcpVersion,
+	// 		MP:              1,
+	// 		S:               pfcp.SEID_PRESENT,
+	// 		MessageType:     pfcp.PFCP_SESSION_ESTABLISHMENT_REQUEST,
+	// 		SEID:            0,
+	// 		SequenceNumber:  getSeqNumber(),
+	// 		MessagePriority: 0,
+	// 	},
+	// 	Body: pfcpMsg,
+	// }
 
 	upaddr := &net.UDPAddr{
 		IP:   ip,

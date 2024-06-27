@@ -77,7 +77,7 @@ type SMFContext struct {
 	PodIp                 string
 
 	StaticIpInfo             *[]factory.StaticIpInfo
-	CPNodeID                 pfcpType.NodeID
+	CPNodeID                 *NodeID
 	UDMProfile               models.NfProfile
 	NrfCacheEvictionInterval time.Duration
 	SBIPort                  int
@@ -86,6 +86,13 @@ type SMFContext struct {
 
 	// For ULCL
 	ULCLSupport bool
+}
+
+// NodeID
+type NodeID struct {
+	Ipv4 string
+	Ipv6 string
+	Fqdn string
 }
 
 // RetrieveDnnInformation gets the corresponding dnn info from S-NSSAI and DNN

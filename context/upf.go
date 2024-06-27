@@ -77,7 +77,7 @@ type UPF struct {
 	teidGenerator  *idgenerator.IDGenerator
 
 	RecoveryTimeStamp pfcpType.RecoveryTimeStamp
-	NodeID            pfcpType.NodeID
+	NodeID            NodeID
 	UPIPInfo          pfcpType.UserPlaneIPResourceInformation
 	UPFStatus         UPFStatus
 	uuid              uuid.UUID

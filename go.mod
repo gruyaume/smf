@@ -22,6 +22,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli v1.22.15
+	github.com/wmnsk/go-pfcp v0.0.24
 	gopkg.in/yaml.v2 v2.4.0
 )
 

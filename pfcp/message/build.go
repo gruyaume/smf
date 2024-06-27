@@ -7,13 +7,14 @@
 package message
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/omec-project/pfcp"
 	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/pfcp/udp"
+	"github.com/wmnsk/go-pfcp/ie"
+	"github.com/wmnsk/go-pfcp/message"
 )
 
 // BuildPfcpHeartbeatRequest shall trigger hearbeat request to all Attached UPFs
@@ -79,78 +80,119 @@ func BuildPfcpAssociationReleaseResponse(cause pfcpType.Cause) (pfcp.PFCPAssocia
 	return msg, nil
 }
 
-func pdrToCreatePDR(pdr *context.PDR) *pfcp.CreatePDR {
-	createPDR := new(pfcp.CreatePDR)
+func pdrToCreatePDR(pdr *context.PDR) *ie.IE {
+	ies := make([]*ie.IE, 0)
 
-	createPDR.PDRID = new(pfcpType.PacketDetectionRuleID)
-	createPDR.PDRID.RuleId = pdr.PDRID
+	ies = append(ies, ie.NewPDRID(pdr.PDRID))
+	ies = append(ies, ie.NewPrecedence(pdr.Precedence))
 
-	createPDR.Precedence = new(pfcpType.Precedence)
-	createPDR.Precedence.PrecedenceValue = pdr.Precedence
-
-	createPDR.PDI = &pfcp.PDI{
-		SourceInterface: &pdr.PDI.SourceInterface,
-		LocalFTEID:      pdr.PDI.LocalFTeid,
-		NetworkInstance: &pdr.PDI.NetworkInstance,
-		UEIPAddress:     pdr.PDI.UEIPAddress,
+	pdiElements := []*ie.IE{
+		ie.NewSourceInterface(pdr.PDI.SourceInterface),
+		ie.NewFTEID(
+			pdr.PDI.LocalFTeid.Flags,
+			pdr.PDI.LocalFTeid.Teid,
+			pdr.PDI.LocalFTeid.V4,
+			pdr.PDI.LocalFTeid.V6,
+			pdr.PDI.LocalFTeid.Chid,
+		),
+		ie.NewNetworkInstance(pdr.PDI.NetworkInstance),
+		ie.NewUEIPAddress(
+			pdr.PDI.UEIPAddress.Flags,
+			pdr.PDI.UEIPAddress.V4,
+			pdr.PDI.UEIPAddress.V6,
+			pdr.PDI.UEIPAddress.V6d,
+			pdr.PDI.UEIPAddress.V6pl,
+		),
 	}
 
 	if pdr.PDI.ApplicationID != "" {
-		createPDR.PDI.ApplicationID = &pfcpType.ApplicationID{
-			ApplicationIdentifier: []byte(pdr.PDI.ApplicationID),
-		}
+		pdiElements = append(pdiElements, ie.NewApplicationID(pdr.PDI.ApplicationID))
 	}
 
 	if pdr.PDI.SDFFilter != nil {
-		createPDR.PDI.SDFFilter = pdr.PDI.SDFFilter
+		pdiElements = append(pdiElements, ie.NewSDFFilter(
+			pdr.PDI.SDFFilter.Fd,
+			pdr.PDI.SDFFilter.Ttc,
+			pdr.PDI.SDFFilter.Spi,
+			pdr.PDI.SDFFilter.Fl,
+			pdr.PDI.SDFFilter.Fid,
+		))
 	}
 
-	createPDR.OuterHeaderRemoval = pdr.OuterHeaderRemoval
+	pdiIE := ie.NewPDI(pdiElements...)
 
-	createPDR.FARID = &pfcpType.FARID{
-		FarIdValue: pdr.FAR.FARID,
-	}
+	ies = append(ies, pdiIE)
+	ies = append(ies, ie.NewOuterHeaderRemoval(pdr.OuterHeaderRemoval.Desc, pdr.OuterHeaderRemoval.Ext))
+	ies = append(ies, ie.NewFARID(pdr.FAR.FARID))
 
+	qerIEs := make([]*ie.IE, 0)
 	for _, qer := range pdr.QER {
 		if qer != nil {
-			createPDR.QERID = append(createPDR.QERID, &pfcpType.QERID{
-				QERID: qer.QERID,
-			})
+			qerIEs = append(qerIEs, ie.NewQERID(qer.QERID))
 		}
 	}
+
+	ies = append(ies, qerIEs...)
+
+	createPDR := ie.NewCreatePDR(ies...)
 
 	return createPDR
 }
 
-func farToCreateFAR(far *context.FAR) *pfcp.CreateFAR {
-	createFAR := new(pfcp.CreateFAR)
+func farToCreateFAR(far *context.FAR) *ie.IE {
+	ies := make([]*ie.IE, 0)
 
-	createFAR.FARID = new(pfcpType.FARID)
-	createFAR.FARID.FarIdValue = far.FARID
+	ies = append(ies, ie.NewFARID(far.FARID))
 
-	createFAR.ApplyAction = new(pfcpType.ApplyAction)
-	createFAR.ApplyAction.Dupl = far.ApplyAction.Dupl
-	createFAR.ApplyAction.Nocp = far.ApplyAction.Nocp
-	createFAR.ApplyAction.Buff = far.ApplyAction.Buff
-	createFAR.ApplyAction.Forw = far.ApplyAction.Forw
-	createFAR.ApplyAction.Drop = far.ApplyAction.Drop
+	applyActionFlags := make([]uint8, 0)
+	if far.ApplyAction.Dupl {
+		applyActionFlags = append(applyActionFlags, 0x01)
+	}
+	if far.ApplyAction.Nocp {
+		applyActionFlags = append(applyActionFlags, 0x02)
+	}
+	if far.ApplyAction.Buff {
+		applyActionFlags = append(applyActionFlags, 0x04)
+	}
+	if far.ApplyAction.Forw {
+		applyActionFlags = append(applyActionFlags, 0x08)
+	}
+	if far.ApplyAction.Drop {
+		applyActionFlags = append(applyActionFlags, 0x10)
+	}
+
+	applyAction := ie.NewApplyAction(applyActionFlags...)
+
+	ies = append(ies, applyAction)
 
 	if far.BAR != nil {
-		createFAR.BARID = new(pfcpType.BARID)
-		createFAR.BARID.BarIdValue = far.BAR.BARID
+		ies = append(ies, ie.NewBARID(far.BAR.BARID))
 	}
 
 	if far.ForwardingParameters != nil {
-		createFAR.ForwardingParameters = new(pfcp.ForwardingParametersIEInFAR)
-		createFAR.ForwardingParameters.DestinationInterface = &far.ForwardingParameters.DestinationInterface
-		createFAR.ForwardingParameters.NetworkInstance = &far.ForwardingParameters.NetworkInstance
-		createFAR.ForwardingParameters.OuterHeaderCreation = far.ForwardingParameters.OuterHeaderCreation
+		forwardingParametersIes := make([]*ie.IE, 0)
+		forwardingParametersIes = append(forwardingParametersIes, ie.NewDestinationInterface(far.ForwardingParameters.DestinationInterface))
+		forwardingParametersIes = append(forwardingParametersIes, ie.NewNetworkInstance(far.ForwardingParameters.NetworkInstance))
+		forwardingParametersIes = append(forwardingParametersIes, ie.NewOuterHeaderCreation(
+			far.ForwardingParameters.OuterHeaderCreation.Desc,
+			far.ForwardingParameters.OuterHeaderCreation.Teid,
+			far.ForwardingParameters.OuterHeaderCreation.V4,
+			far.ForwardingParameters.OuterHeaderCreation.V6,
+			far.ForwardingParameters.OuterHeaderCreation.Port,
+			far.ForwardingParameters.OuterHeaderCreation.Ctag,
+			far.ForwardingParameters.OuterHeaderCreation.Stag,
+		))
+
 		if far.ForwardingParameters.ForwardingPolicyID != "" {
-			createFAR.ForwardingParameters.ForwardingPolicy = new(pfcpType.ForwardingPolicy)
-			createFAR.ForwardingParameters.ForwardingPolicy.ForwardingPolicyIdentifierLength = uint8(len(far.ForwardingParameters.ForwardingPolicyID))
-			createFAR.ForwardingParameters.ForwardingPolicy.ForwardingPolicyIdentifier = []byte(far.ForwardingParameters.ForwardingPolicyID)
+			forwardingPolicy := ie.NewForwardingPolicy(far.ForwardingParameters.ForwardingPolicyID)
+			forwardingParametersIes = append(forwardingParametersIes, forwardingPolicy)
 		}
+
+		ies = append(ies, ie.NewForwardingParameters())
+
 	}
+
+	createFAR := ie.NewCreateFAR(ies...)
 
 	return createFAR
 }
@@ -271,67 +313,55 @@ func BuildPfcpSessionEstablishmentRequest(
 	farList []*context.FAR,
 	barList []*context.BAR,
 	qerList []*context.QER,
-) (pfcp.PFCPSessionEstablishmentRequest, error) {
-	msg := pfcp.PFCPSessionEstablishmentRequest{}
+	seid uint64,
+	seq uint32,
+	pri uint8,
+) (*message.SessionEstablishmentRequest, error) {
 
-	msg.NodeID = &context.SMF_Self().CPNodeID
+	ies := make([]*ie.IE, 0)
 
-	isv4 := context.SMF_Self().CPNodeID.NodeIdType == 0
-	nodeIDtoIP := upNodeID.ResolveNodeIdToIp().String()
+	ies = append(ies, ie.NewNodeID(context.SMF_Self().CPNodeID.Ipv4, context.SMF_Self().CPNodeID.Ipv6, context.SMF_Self().CPNodeID.Fqdn))
 
-	localSEID := smContext.PFCPContext[nodeIDtoIP].LocalSEID
-	fmt.Printf("in BuildPfcpSessionEstablishmentRequest localSEID %v\n", localSEID)
-	msg.CPFSEID = &pfcpType.FSEID{
-		V4:          isv4,
-		V6:          !isv4,
-		Seid:        localSEID,
-		Ipv4Address: context.SMF_Self().CPNodeID.NodeIdValue,
+	var cpFSEID *ie.IE
+	if context.SMF_Self().CPNodeID.Ipv4 != "" {
+		localSEID := smContext.PFCPContext[context.SMF_Self().CPNodeID.Ipv4].LocalSEID
+		cpFSEID = ie.NewFSEID(localSEID, net.IP(context.SMF_Self().CPNodeID.Ipv4), nil)
+	} else {
+		localSEID := smContext.PFCPContext[context.SMF_Self().CPNodeID.Ipv6].LocalSEID
+		cpFSEID = ie.NewFSEID(localSEID, nil, net.IP(context.SMF_Self().CPNodeID.Ipv6))
 	}
-
-	msg.CreatePDR = make([]*pfcp.CreatePDR, 0)
-	msg.CreateFAR = make([]*pfcp.CreateFAR, 0)
+	ies = append(ies, cpFSEID)
 
 	for _, pdr := range pdrList {
 		if pdr.State == context.RULE_INITIAL {
-			msg.CreatePDR = append(msg.CreatePDR, pdrToCreatePDR(pdr))
+			ies = append(ies, pdrToCreatePDR(pdr))
 		}
 		pdr.State = context.RULE_CREATE
 	}
 
 	for _, far := range farList {
 		if far.State == context.RULE_INITIAL {
-			msg.CreateFAR = append(msg.CreateFAR, farToCreateFAR(far))
+			ies = append(ies, farToCreateFAR(far))
 		}
 		far.State = context.RULE_CREATE
 	}
 
 	for _, bar := range barList {
 		if bar.State == context.RULE_INITIAL {
-			msg.CreateBAR = append(msg.CreateBAR, barToCreateBAR(bar))
+			ies = append(ies, barToCreateBAR(bar))
 		}
 		bar.State = context.RULE_CREATE
 	}
 
-	// QER maybe redundant, so we needs properly needs
-
-	qerMap := make(map[uint32]*context.QER)
 	for _, qer := range qerList {
-		qerMap[qer.QERID] = qer
-	}
-	for _, filteredQER := range qerMap {
-		if filteredQER.State == context.RULE_INITIAL {
-			msg.CreateQER = append(msg.CreateQER, qerToCreateQER(filteredQER))
+		if qer.State == context.RULE_INITIAL {
+			ies = append(ies, qerToCreateQER(qer))
 		}
-		filteredQER.State = context.RULE_CREATE
+		qer.State = context.RULE_CREATE
 	}
 
-	msg.PDNType = &pfcpType.PDNType{
-		PdnType: pfcpType.PDNTypeIpv4,
-	}
-
-	// for _, far := range msg.CreateFAR {
-	// 	printCreateFAR(far)
-	// }
+	ies = append(ies, ie.NewPDNType(ie.PDNTypeIPv4))
+	msg := message.NewSessionEstablishmentRequest(1, 1, seid, seq, pri, ies...)
 
 	return msg, nil
 }
