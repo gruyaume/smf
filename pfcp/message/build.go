@@ -316,7 +316,7 @@ func BuildPfcpSessionEstablishmentRequest(
 		filteredQER.State = context.RULE_CREATE
 	}
 
-	ies = append(ies, ie.NewPDNType(context.PDNTypeIpv4))
+	ies = append(ies, ie.NewPDNType(ie.PDNTypeIPv4))
 
 	return message.NewSessionEstablishmentRequest(
 		0,
