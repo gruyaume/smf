@@ -200,6 +200,8 @@ func InitSmfContext(config *factory.Config) *SMFContext {
 			logger.CtxLog.Warnf("PFCP Parse Addr Fail: %v", err)
 		}
 
+		smfContext.PFCPPort = int(pfcp.Port)
+
 		smfContext.CPNodeID.NodeIdType = 0
 		smfContext.CPNodeID.NodeIdValue = addr.IP.To4()
 	}

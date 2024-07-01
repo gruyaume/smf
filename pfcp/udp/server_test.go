@@ -43,56 +43,20 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func TestServerListen(t *testing.T) {
-	// sourceAddress := net.UDPAddr{
-	// 	IP:   net.ParseIP("0.0.0.0"),
-	// 	Port: 8805,
-	// }
-	// // s := udp.NewPfcpServer(&sourceAddress)
+func TestServerWriteTo(t *testing.T) {
+	sourceAddress := &net.UDPAddr{
+		IP:   net.ParseIP("0.0.0.0"),
+		Port: 8805,
+	}
 
-	// // Reset the flag
-	// heartbeatRequestCalled = false
+	remoteAddress := &net.UDPAddr{
+		IP:   net.ParseIP("10.152.183.116"),
+		Port: 8805,
+	}
 
-	// // go s.Listen(Dispatch)
+	server := udp.NewPfcpServer(sourceAddress)
 
-	// // Allow some time for the server to start listening
-	// // time.Sleep(1 * time.Second)
+	msg := message.NewAssociationSetupResponse(1)
 
-	// // Send a message to the server
-	// conn, err := net.DialUDP("udp", nil, &sourceAddress)
-	// if err != nil {
-	// 	t.Fatalf("Failed to dial server: %v", err)
-	// }
-	// defer conn.Close()
-
-	// ts := time.Now()
-	// tsIe := ie.NewRecoveryTimeStamp(ts)
-	// ipv4Address := net.IPv4(127, 0, 0, 1)
-	// ipIe := ie.NewSourceIPAddress(ipv4Address, nil, 0)
-	// heartbeatRequest := message.NewHeartbeatResponse(1, tsIe, ipIe)
-
-	// buf, err := heartbeatRequest.Marshal()
-	// if err != nil {
-	// 	t.Fatalf("Failed to marshal message: %v", err)
-	// }
-
-	// _, err = conn.Write(buf)
-	// if err != nil {
-	// 	t.Fatalf("Failed to send message: %v", err)
-	// }
-
-	// // Allow some time for the message to be processed
-	// // time.Sleep(1 * time.Second)
-
-	// if !heartbeatRequestCalled {
-	// 	t.Errorf("Expected HandlePfcpHeartbeatRequest to be called, but it was not")
-	// }
-
-	// if receivedMessage.MessageType() != message.MsgTypeHeartbeatRequest {
-	// 	t.Errorf("Expected message type %d, got %d", message.MsgTypeHeartbeatRequest, receivedMessage.MessageType())
-	// }
-
-	// if receivedMessage.Sequence() != 1 {
-	// 	t.Errorf("Expected sequence number 1, got %d", receivedMessage.Sequence())
-	// }
+	server.WriteTo(msg, remoteAddress)
 }
