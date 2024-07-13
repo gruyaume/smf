@@ -343,8 +343,10 @@ func HandlePfcpAssociationSetupResponse(msg message.Message, remoteAddress *net.
 		// Supported Features of UPF
 		if rsp.UPFunctionFeatures != nil {
 			logger.PfcpLog.Debugf("Handle PFCP Association Setup success Response, received UPFunctionFeatures= %v ", rsp.UPFunctionFeatures)
-			upf.UPFunctionFeatures = &pfcpType.UPFunctionFeatures{
-				SupportedFeatures: 0, // TODO: Parse Supported Features
+			upf.UPFunctionFeatures, err = UnmarshallSupportedFeatures(rsp.UPFunctionFeatures.Payload)
+			if err != nil {
+				logger.PfcpLog.Warnf("TO DELETE: failed to get UPFunctionFeatures: %+v", err)
+				return
 			}
 		}
 
