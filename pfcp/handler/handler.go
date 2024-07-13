@@ -35,30 +35,22 @@ func FindUEIPAddress(createdPDRIEs []*ie.IE) net.IP {
 }
 
 func NewNodeID(nodeId string) pfcpType.NodeID {
+	var nodeIdType uint8
 	ip := net.ParseIP(nodeId)
 	if ip == nil {
-		return pfcpType.NodeID{
-			NodeIdValue: []byte(nodeId),
-			NodeIdType:  pfcpType.NodeIdTypeFqdn,
-		}
+		nodeIdType = pfcpType.NodeIdTypeFqdn
+		ip = []byte(nodeId)
+	} else if ip.To4() != nil {
+		nodeIdType = pfcpType.NodeIdTypeIpv4Address
+		ip = ip.To4()
+	} else {
+		nodeIdType = pfcpType.NodeIdTypeIpv6Address
+		ip = ip.To16()
 	}
-	v4 := ip.To4()
-	if v4 != nil {
-		return pfcpType.NodeID{
-			NodeIdValue: v4,
-			NodeIdType:  pfcpType.NodeIdTypeIpv4Address,
-		}
-	}
-	v6 := ip.To16()
-	if v6 != nil {
-		return pfcpType.NodeID{
-			NodeIdValue: v6,
-			NodeIdType:  pfcpType.NodeIdTypeIpv6Address,
-		}
-	}
+
 	return pfcpType.NodeID{
-		NodeIdValue: []byte(nodeId),
-		NodeIdType:  pfcpType.NodeIdTypeFqdn,
+		NodeIdType:  nodeIdType,
+		NodeIdValue: []byte(ip),
 	}
 }
 

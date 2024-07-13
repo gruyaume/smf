@@ -63,7 +63,7 @@ func HTTPPostSmContexts(c *gin.Context) {
 
 	req := httpwrapper.NewRequest(c.Request, request)
 	txn := transaction.NewTransaction(req.Body.(models.PostSmContextsRequest), nil, svcmsgtypes.SmfMsgType(svcmsgtypes.CreateSmContext))
-
+	logger.PduSessLog.Warnf("TO DELETE: Starting transaction lifecycle for %s", txn.MsgType)
 	go txn.StartTxnLifeCycle(fsm.SmfTxnFsmHandle)
 	<-txn.Status // wait for txn to complete at SMF
 	HTTPResponse := txn.Rsp.(*httpwrapper.Response)
@@ -71,6 +71,7 @@ func HTTPPostSmContexts(c *gin.Context) {
 	errStr := ""
 	if txn.Err != nil {
 		errStr = txn.Err.Error()
+		logger.PduSessLog.Warnf("TO DELETE: Error in transaction lifecycle for %s: %s", txn.MsgType, errStr)
 	}
 
 	// Http Response to AMF
@@ -94,6 +95,7 @@ func HTTPPostSmContexts(c *gin.Context) {
 
 	go func(smContext *smf_context.SMContext) {
 		var txn *transaction.Transaction
+		logger.PduSessLog.Warnf("TO DELETE: Starting transaction lifecycle for %s", svcmsgtypes.PfcpSessCreate)
 		if HTTPResponse.Status == http.StatusCreated {
 			txn = transaction.NewTransaction(nil, nil, svcmsgtypes.SmfMsgType(svcmsgtypes.PfcpSessCreate))
 			txn.Ctxt = smContext

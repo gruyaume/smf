@@ -39,7 +39,11 @@ func (SmfTxnFsm) TxnLoadCtxt(txn *transaction.Transaction) (transaction.TxnEvent
 		}
 		// Create fresh context
 		txn.Ctxt = smf_context.NewSMContext(createData.Supi, createData.PduSessionId)
-		txn.CtxtKey, _ = smf_context.ResolveRef(createData.Supi, createData.PduSessionId)
+		CtxtKey, err := smf_context.ResolveRef(createData.Supi, createData.PduSessionId)
+		if err != nil {
+			logger.PduSessLog.Warnf("PDUSessionSMContextCreate, SMContext[%s] is not found", CtxtKey)
+		}
+		txn.CtxtKey = CtxtKey
 	case svcmsgtypes.UpdateSmContext:
 		fallthrough
 	case svcmsgtypes.ReleaseSmContext:
