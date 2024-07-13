@@ -65,7 +65,9 @@ func HTTPPostSmContexts(c *gin.Context) {
 	txn := transaction.NewTransaction(req.Body.(models.PostSmContextsRequest), nil, svcmsgtypes.SmfMsgType(svcmsgtypes.CreateSmContext))
 	logger.PduSessLog.Warnf("TO DELETE: Starting transaction lifecycle for %s", txn.MsgType)
 	go txn.StartTxnLifeCycle(fsm.SmfTxnFsmHandle)
+	logger.PduSessLog.Warnf("TO DELETE: Waiting for transaction lifecycle for %s", txn.MsgType)
 	<-txn.Status // wait for txn to complete at SMF
+	logger.PduSessLog.Warnf("TO DELETE: Transaction lifecycle for %s completed", txn.MsgType)
 	HTTPResponse := txn.Rsp.(*httpwrapper.Response)
 	smContext := txn.Ctxt.(*smf_context.SMContext)
 	errStr := ""
@@ -95,7 +97,7 @@ func HTTPPostSmContexts(c *gin.Context) {
 
 	go func(smContext *smf_context.SMContext) {
 		var txn *transaction.Transaction
-		logger.PduSessLog.Warnf("TO DELETE: Starting transaction lifecycle for %s", svcmsgtypes.PfcpSessCreate)
+		logger.PduSessLog.Warnf("TO DELETE: Starting transaction lifecycle for %s (2)", svcmsgtypes.PfcpSessCreate)
 		if HTTPResponse.Status == http.StatusCreated {
 			txn = transaction.NewTransaction(nil, nil, svcmsgtypes.SmfMsgType(svcmsgtypes.PfcpSessCreate))
 			txn.Ctxt = smContext

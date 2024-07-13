@@ -21,12 +21,12 @@ type Transaction struct {
 	Ctxt               interface{}
 	CtxtKey            string
 	Err                error
-	Status             chan bool
-	NextTxn            *Transaction
-	TxnFsmLog          *logrus.Entry
-	MsgType            svcmsgtypes.SmfMsgType
-	TxnId              uint32
-	Priority           uint32
+	// Status             chan bool
+	NextTxn   *Transaction
+	TxnFsmLog *logrus.Entry
+	MsgType   svcmsgtypes.SmfMsgType
+	TxnId     uint32
+	Priority  uint32
 }
 
 func (t *Transaction) initLogTags() {

@@ -113,6 +113,7 @@ func (SmfTxnFsm) TxnCtxtRun(txn *transaction.Transaction) (transaction.TxnEvent,
 }
 
 func (SmfTxnFsm) TxnProcess(txn *transaction.Transaction) (transaction.TxnEvent, error) {
+	logger.FsmLog.Warnf("TO DELETE: Transaction processing for %s", txn.MsgType)
 	smContext := txn.Ctxt.(*smf_context.SMContext)
 	if smContext == nil {
 		txn.TxnFsmLog.Errorf("event[%v], next-event[%v], SM context invalid ", transaction.TxnEventProcess.String(), transaction.TxnEventFailure.String())
@@ -187,6 +188,7 @@ func (SmfTxnFsm) TxnSuccess(txn *transaction.Transaction) (transaction.TxnEvent,
 
 func (SmfTxnFsm) TxnFailure(txn *transaction.Transaction) (transaction.TxnEvent, error) {
 	// Put Failure Rsp
+	logger.FsmLog.Warnf("TO DELETE: Transaction failed for %s", txn.MsgType)
 	switch txn.MsgType {
 	case svcmsgtypes.PfcpSessCreate:
 		if txn.Ctxt != nil && txn.Ctxt.(*smf_context.SMContext).SMContextState == smf_context.SmStatePfcpCreatePending {
@@ -200,6 +202,7 @@ func (SmfTxnFsm) TxnFailure(txn *transaction.Transaction) (transaction.TxnEvent,
 				// Initiate N1N2 Transfer
 
 				// nextTxn.StartTxnLifeCycle(SmfTxnFsmHandle)
+				logger.FsmLog.Warnf("TO DELETE: Waiting for transaction lifecycle for %s (2)", svcmsgtypes.PfcpSessCreateFailure)
 				<-nextTxn.Status
 			}(nextTxn)
 		}
