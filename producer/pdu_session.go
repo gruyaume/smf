@@ -9,6 +9,7 @@ package producer
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/antihax/optional"
@@ -318,7 +319,6 @@ func HandlePDUSessionSMContextUpdate(eventData interface{}) error {
 	pfcpParam := &pfcpParam{
 		pdrList: []*smf_context.PDR{},
 		farList: []*smf_context.FAR{},
-		barList: []*smf_context.BAR{},
 		qerList: []*smf_context.QER{},
 	}
 
@@ -625,7 +625,11 @@ func releaseTunnel(smContext *smf_context.SMContext) bool {
 				continue
 			}
 			if _, exist := deletedPFCPNode[curUPFID]; !exist {
-				pfcp_message.SendPfcpSessionDeletionRequest(curDataPathNode.UPF.NodeID, smContext, curDataPathNode.UPF.Port)
+				remoteAddress := &net.UDPAddr{
+					IP:   curDataPathNode.UPF.NodeID.ResolveNodeIdToIp(),
+					Port: int(curDataPathNode.UPF.Port),
+				}
+				pfcp_message.SendPfcpSessionDeletionRequest(remoteAddress, curDataPathNode.UPF.NodeID, smContext)
 				deletedPFCPNode[curUPFID] = true
 				smContext.PendingUPF[curDataPathNode.GetNodeIP()] = true
 			}
@@ -719,7 +723,6 @@ func HandlePduSessN1N2TransFailInd(eventData interface{}) error {
 	pdrList := []*smf_context.PDR{}
 	farList := []*smf_context.FAR{}
 	qerList := []*smf_context.QER{}
-	barList := []*smf_context.BAR{}
 
 	if smContext.Tunnel != nil {
 		smContext.PendingUPF = make(smf_context.PendingUPF)
@@ -742,7 +745,11 @@ func HandlePduSessN1N2TransFailInd(eventData interface{}) error {
 		ANUPF := defaultPath.FirstDPNode
 
 		// Sending PFCP modification with flag set to DROP the packets.
-		pfcp_message.SendPfcpSessionModificationRequest(ANUPF.UPF.NodeID, smContext, pdrList, farList, barList, qerList, ANUPF.UPF.Port)
+		remoteAddress := &net.UDPAddr{
+			IP:   ANUPF.UPF.NodeID.ResolveNodeIdToIp(),
+			Port: int(ANUPF.UPF.Port),
+		}
+		pfcp_message.SendPfcpSessionModificationRequest(remoteAddress, ANUPF.UPF.NodeID, smContext, pdrList, farList, qerList)
 	}
 
 	// Listening PFCP modification response.

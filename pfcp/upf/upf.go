@@ -7,6 +7,7 @@
 package upf
 
 import (
+	"net"
 	"time"
 
 	"github.com/omec-project/pfcp"
@@ -30,7 +31,11 @@ func InitPfcpHeartbeatRequest(userplane *context.UserPlaneInformation) {
 		for _, upf := range userplane.UPFs {
 			upf.UPF.UpfLock.Lock()
 			if (upf.UPF.UPFStatus == context.AssociatedSetUpSuccess) && upf.UPF.NHeartBeat < maxHeartbeatRetry {
-				err := message.SendHeartbeatRequest(upf.NodeID, upf.Port) // needs lock in sync rsp(adapter mode)
+				remoteAddress := &net.UDPAddr{
+					IP:   upf.NodeID.ResolveNodeIdToIp(),
+					Port: int(upf.Port),
+				}
+				err := message.SendHeartbeatRequest(remoteAddress, upf.NodeID) // needs lock in sync rsp(adapter mode)
 				if err != nil {
 					logger.PfcpLog.Errorf("send pfcp heartbeat request failed: %v for UPF[%v, %v]: ", err, upf.NodeID, upf.NodeID.ResolveNodeIdToIp())
 				} else {
@@ -41,7 +46,6 @@ func InitPfcpHeartbeatRequest(userplane *context.UserPlaneInformation) {
 				metrics.IncrementN4MsgStats(context.SMF_Self().NfInstanceID, pfcpmsgtypes.PfcpMsgTypeString(pfcp.PFCP_HEARTBEAT_REQUEST), "Out", "Failure", "Timeout")
 				upf.UPF.UPFStatus = context.NotAssociated
 			}
-
 			upf.UPF.UpfLock.Unlock()
 		}
 	}
@@ -54,7 +58,14 @@ func ProbeInactiveUpfs(upfs *context.UserPlaneInformation) {
 		for _, upf := range upfs.UPFs {
 			upf.UPF.UpfLock.Lock()
 			if upf.UPF.UPFStatus == context.NotAssociated {
-				message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+				remoteAddress := &net.UDPAddr{
+					IP:   upf.NodeID.ResolveNodeIdToIp(),
+					Port: int(upf.Port),
+				}
+				err := message.SendPfcpAssociationSetupRequest(remoteAddress, upf.NodeID)
+				if err != nil {
+					logger.PfcpLog.Errorf("send pfcp association setup request failed: %v for UPF[%v, %v]: ", err, upf.NodeID, upf.NodeID.ResolveNodeIdToIp())
+				}
 			}
 			upf.UPF.UpfLock.Unlock()
 		}

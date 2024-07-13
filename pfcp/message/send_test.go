@@ -4,39 +4,27 @@
 
 package message_test
 
-import (
-	"net"
-	"testing"
-	"time"
+// func TestSendPfcpAssociationSetupRequest(t *testing.T) {
+// }
 
-	"github.com/omec-project/pfcp/pfcpType"
-	"github.com/omec-project/smf/context"
-	smf_pfcp "github.com/omec-project/smf/pfcp"
-	"github.com/omec-project/smf/pfcp/message"
-	"github.com/omec-project/smf/pfcp/udp"
-)
+// func TestSendPfcpSessionEstablishmentResponse(t *testing.T) {
+// }
 
-func TestSendPfcpAssociationSetupRequest(t *testing.T) {
-}
+// func TestSendPfcpSessionEstablishmentRequest(t *testing.T) {
+// }
 
-func TestSendPfcpSessionEstablishmentResponse(t *testing.T) {
-}
+// func TestSendHeartbeatResponse(t *testing.T) {
+// 	context.SMF_Self().CPNodeID = pfcpType.NodeID{
+// 		NodeIdType:  pfcpType.NodeIdTypeIpv4Address,
+// 		NodeIdValue: net.ParseIP("127.0.0.2").To4(),
+// 	}
+// 	udp.Run(smf_pfcp.Dispatch)
 
-func TestSendPfcpSessionEstablishmentRequest(t *testing.T) {
-}
-
-func TestSendHeartbeatResponse(t *testing.T) {
-	context.SMF_Self().CPNodeID = pfcpType.NodeID{
-		NodeIdType:  pfcpType.NodeIdTypeIpv4Address,
-		NodeIdValue: net.ParseIP("127.0.0.2").To4(),
-	}
-	udp.Run(smf_pfcp.Dispatch)
-
-	udp.ServerStartTime = time.Now()
-	var seq uint32 = 1
-	addr := &net.UDPAddr{
-		IP:   net.ParseIP("127.0.0.1"),
-		Port: 7001,
-	}
-	message.SendHeartbeatResponse(addr, seq)
-}
+// 	udp.ServerStartTime = time.Now()
+// 	var seq uint32 = 1
+// 	addr := &net.UDPAddr{
+// 		IP:   net.ParseIP("127.0.0.1"),
+// 		Port: 7001,
+// 	}
+// 	message.SendHeartbeatResponse(addr, seq)
+// }

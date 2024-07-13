@@ -8,6 +8,7 @@ package service
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	_ "net/http/pprof" // Using package only for invoking initialization.
 	"os"
@@ -348,7 +349,16 @@ func (smf *SMF) Start() {
 		initLog.Errorf("initialise kafka stream failed, %v ", err.Error())
 	}
 
-	udp.Run(pfcp.Dispatch)
+	sourceAddress := &net.UDPAddr{
+		IP:   smfCtxt.CPNodeID.ResolveNodeIdToIp(),
+		Port: 8805,
+	}
+	go udp.Run(sourceAddress, pfcp.Dispatch)
+
+	err := udp.WaitForServer()
+	if err != nil {
+		initLog.Fatalf("Failed to start PFCP server: %v", err)
+	}
 
 	for _, upf := range context.SMF_Self().UserPlaneInformation.UPFs {
 		if upf.NodeID.NodeIdType == pfcpType.NodeIdTypeFqdn {
@@ -357,7 +367,11 @@ func (smf *SMF) Start() {
 		} else {
 			logger.AppLog.Infof("Send PFCP Association Request to UPF[%s]\n", upf.NodeID.ResolveNodeIdToIp().String())
 		}
-		message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+		remoteAddress := &net.UDPAddr{
+			IP:   upf.NodeID.ResolveNodeIdToIp(),
+			Port: int(upf.Port),
+		}
+		message.SendPfcpAssociationSetupRequest(remoteAddress, upf.NodeID)
 	}
 
 	// Trigger PFCP Heartbeat towards all connected UPFs
