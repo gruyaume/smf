@@ -4,7 +4,7 @@
 
 package udp_test
 
-const testPfcpClientPort = 12345
+// const testPfcpClientPort = 12345
 
 // func TestRun(t *testing.T) {
 // 	// Set SMF Node ID

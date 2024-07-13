@@ -8,7 +8,6 @@ import (
 )
 
 func UnmarshallSupportedFeatures(data []byte) (*pfcpType.UPFunctionFeatures, error) {
-
 	length := uint16(len(data))
 
 	u := &pfcpType.UPFunctionFeatures{}
@@ -19,19 +18,19 @@ func UnmarshallSupportedFeatures(data []byte) (*pfcpType.UPFunctionFeatures, err
 		return nil, fmt.Errorf("inadequate TLV length: %d", length)
 	}
 
-	//Additional Supported-Features
+	// Additional Supported-Features
 	if length >= 2 {
 		u.SupportedFeatures = binary.LittleEndian.Uint16(data[idx : idx+2])
 	}
 
 	if length >= 4 {
-		//Additional Supported-Features 1
+		// Additional Supported-Features 1
 		idx += 2
 		u.SupportedFeatures1 = binary.LittleEndian.Uint16(data[idx : idx+2])
 	}
 
 	if length == 6 {
-		//Additional Supported-Features 2
+		// Additional Supported-Features 2
 		idx += 2
 		u.SupportedFeatures2 = binary.LittleEndian.Uint16(data[idx : idx+2])
 	}
