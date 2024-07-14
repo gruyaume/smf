@@ -20,7 +20,6 @@ import (
 	"github.com/omec-project/nas/nasMessage"
 	"github.com/omec-project/openapi/models"
 	"github.com/omec-project/pfcp/pfcpType"
-	"github.com/omec-project/pfcp/pfcpUdp"
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/util/idgenerator"
@@ -290,7 +289,7 @@ func (upf *UPF) GenerateTEID() (uint32, error) {
 func (upf *UPF) PFCPAddr() *net.UDPAddr {
 	return &net.UDPAddr{
 		IP:   upf.NodeID.ResolveNodeIdToIp(),
-		Port: pfcpUdp.PFCP_PORT,
+		Port: 8805,
 	}
 }
 

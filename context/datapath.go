@@ -17,6 +17,7 @@ import (
 	"github.com/omec-project/smf/qos"
 	"github.com/omec-project/smf/util"
 	"github.com/omec-project/util/util_3gpp"
+	"github.com/wmnsk/go-pfcp/ie"
 )
 
 // GTPTunnel represents the GTP tunnel information
@@ -517,7 +518,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 			logger.CtxLog.Errorf("activate UpLink PDR[%v] failed %v ", name, err)
 			return err
 		} else {
-			ULPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: pfcpType.SourceInterfaceAccess}
+			ULPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceAccess}
 			ULPDR.PDI.LocalFTeid = &pfcpType.FTEID{
 				V4:          true,
 				Ipv4Address: upIP,
@@ -607,7 +608,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				logger.CtxLog.Errorf("activate Downlink PDR[%v] failed %v ", name, err)
 				return err
 			} else {
-				DLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: pfcpType.SourceInterfaceCore}
+				DLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
 				DLPDR.PDI.LocalFTeid = &pfcpType.FTEID{
 					V4:          true,
 					Ipv4Address: upIP,
@@ -722,7 +723,7 @@ func (dataPath *DataPath) ActivateTunnelAndPDR(smContext *SMContext, precedence 
 		if curDataPathNode.DownLinkTunnel != nil {
 			if curDataPathNode.DownLinkTunnel.SrcEndPoint == nil {
 				for _, DNDLPDR := range curDataPathNode.DownLinkTunnel.PDR {
-					DNDLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: pfcpType.SourceInterfaceCore}
+					DNDLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
 					DNDLPDR.PDI.NetworkInstance = util_3gpp.Dnn(smContext.Dnn)
 					DNDLPDR.PDI.UEIPAddress = &ueIpAddr
 				}

@@ -20,7 +20,6 @@ import (
 
 	protos "github.com/omec-project/config5g/proto/sdcoreConfig"
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpUdp"
 	"github.com/omec-project/smf/logger"
 	logger_util "github.com/omec-project/util/logger"
 )
@@ -287,7 +286,7 @@ func (c *Configuration) parseRocConfig(rsp *protos.NetworkSliceResponse) error {
 	// should be updated to be received from webui.
 	// currently adding port info in webui causes crash.
 	pfcpPortStr := os.Getenv("PFCP_PORT_UPF")
-	pfcpPortVal := pfcpUdp.PFCP_PORT
+	pfcpPortVal := 8805
 	if pfcpPortStr != "" {
 		if val, err := strconv.ParseUint(pfcpPortStr, 10, 32); err != nil {
 			logger.CtxLog.Infoln("Parse pfcp port failed : ", pfcpPortStr)
