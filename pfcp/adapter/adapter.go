@@ -48,19 +48,19 @@ This function is called when smf runs with upfadapter and the communication betw
 func HandleAdapterPfcpRsp(pfcpMsg message.Message, evtData *udp.PfcpEventData) error {
 	switch pfcpMsg.MessageType() {
 	case message.MsgTypeAssociationSetupResponse:
-		msg := udp.UDPMessage{PfcpMessage: pfcpMsg}
+		msg := udp.Message{PfcpMessage: pfcpMsg}
 		HandlePfcpAssociationSetupResponse(&msg)
 	case message.MsgTypeHeartbeatResponse:
-		msg := udp.UDPMessage{PfcpMessage: pfcpMsg}
+		msg := udp.Message{PfcpMessage: pfcpMsg}
 		HandlePfcpHeartbeatResponse(&msg)
 	case message.MsgTypeSessionEstablishmentResponse:
-		msg := udp.UDPMessage{PfcpMessage: pfcpMsg, EventData: *evtData}
+		msg := udp.Message{PfcpMessage: pfcpMsg, EventData: *evtData}
 		HandlePfcpSessionEstablishmentResponse(&msg)
 	case message.MsgTypeSessionModificationResponse:
-		msg := udp.UDPMessage{PfcpMessage: pfcpMsg, EventData: *evtData}
+		msg := udp.Message{PfcpMessage: pfcpMsg, EventData: *evtData}
 		HandlePfcpSessionModificationResponse(&msg)
 	case message.MsgTypeSessionDeletionResponse:
-		msg := udp.UDPMessage{PfcpMessage: pfcpMsg, EventData: *evtData}
+		msg := udp.Message{PfcpMessage: pfcpMsg, EventData: *evtData}
 		HandlePfcpSessionDeletionResponse(&msg)
 	default:
 		logger.PfcpLog.Errorf("upf adapter invalid msg type: %v", pfcpMsg)
@@ -68,7 +68,7 @@ func HandleAdapterPfcpRsp(pfcpMsg message.Message, evtData *udp.PfcpEventData) e
 	return nil
 }
 
-func HandlePfcpAssociationSetupResponse(msg *udp.UDPMessage) {
+func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.AssociationSetupResponse)
 	if !ok {
 		logger.PfcpLog.Errorln("Invalid PFCP Association Setup Response")
@@ -169,7 +169,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpHeartbeatResponse(msg *udp.UDPMessage) {
+func HandlePfcpHeartbeatResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.HeartbeatResponse)
 	if !ok {
 		logger.PfcpLog.Errorln("Invalid PFCP Heartbeat Response")
@@ -219,7 +219,7 @@ func HandlePfcpHeartbeatResponse(msg *udp.UDPMessage) {
 	upf.NHeartBeat = 0 // reset Heartbeat attempt to 0
 }
 
-func HandlePfcpSessionEstablishmentResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionEstablishmentResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.SessionEstablishmentResponse)
 	if !ok {
 		logger.PfcpLog.Errorln("Invalid PFCP Session Establishment Response")
@@ -289,7 +289,7 @@ func HandlePfcpSessionEstablishmentResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpSessionModificationResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionModificationResponse(msg *udp.Message) {
 	pfcpRsp, ok := msg.PfcpMessage.(*message.SessionModificationResponse)
 	if !ok {
 		logger.PfcpLog.Errorln("Invalid PFCP Session Modification Response")
@@ -352,7 +352,7 @@ func HandlePfcpSessionModificationResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpSessionDeletionResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionDeletionResponse(msg *udp.Message) {
 	pfcpRsp, ok := msg.PfcpMessage.(*message.SessionDeletionResponse)
 	if !ok {
 		logger.PfcpLog.Errorln("Invalid PFCP Session Deletion Response")

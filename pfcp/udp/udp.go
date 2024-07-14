@@ -17,10 +17,7 @@ import (
 	"github.com/wmnsk/go-pfcp/message"
 )
 
-const (
-	PFCP_PORT        = 8805
-	PFCP_MAX_UDP_LEN = 2048
-)
+const PFCP_MAX_UDP_LEN = 2048
 
 type ConsumerTable struct {
 	m sync.Map // map[string]TxTable
@@ -33,6 +30,7 @@ type PfcpEventData struct {
 
 type PfcpServer struct {
 	Addr string
+	Port int
 	Conn *net.UDPConn
 	// Consumer Table
 	// Map Consumer IP to its tx table
@@ -42,11 +40,6 @@ type PfcpServer struct {
 var Server *PfcpServer
 
 var ServerStartTime time.Time
-
-func NewPfcpServer(addr string) *PfcpServer {
-	server := PfcpServer{Addr: addr}
-	return &server
-}
 
 func (t *ConsumerTable) Load(consumerAddr string) (*TxTable, bool) {
 	txTable, ok := t.m.Load(consumerAddr)
@@ -70,7 +63,7 @@ func (pfcpServer *PfcpServer) Listen() error {
 
 	addr := &net.UDPAddr{
 		IP:   serverIp,
-		Port: PFCP_PORT,
+		Port: pfcpServer.Port,
 	}
 
 	conn, err := net.ListenUDP("udp", addr)
@@ -78,9 +71,11 @@ func (pfcpServer *PfcpServer) Listen() error {
 	return err
 }
 
-func Run(Dispatch func(*UDPMessage)) {
-	CPNodeID := context.SMF_Self().CPNodeID
-	Server = NewPfcpServer(CPNodeID.ResolveNodeIdToIp().String())
+func Run(Dispatch func(*Message)) {
+	Server = &PfcpServer{
+		Addr: context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String(),
+		Port: context.SMF_Self().PFCPPort,
+	}
 
 	err := Server.Listen()
 	if err != nil {
@@ -97,11 +92,8 @@ func Run(Dispatch func(*UDPMessage)) {
 				} else {
 					logger.PfcpLog.Warnf("Read PFCP error: %v", err)
 				}
-
-				continue
 			}
-
-			msg := NewUDPMessage(remoteAddr, pfcpMessage, eventData)
+			msg := NewMessage(remoteAddr, pfcpMessage, eventData)
 			go Dispatch(&msg)
 		}
 	}(Server)
@@ -110,6 +102,12 @@ func Run(Dispatch func(*UDPMessage)) {
 }
 
 func SendPfcp(msg message.Message, addr *net.UDPAddr, eventData interface{}) error {
+	if Server == nil {
+		return fmt.Errorf("PFCP server is not initialized")
+	}
+	if Server.Conn == nil {
+		return fmt.Errorf("PFCP server is not listening")
+	}
 	err := Server.WriteTo(msg, addr, eventData)
 	if err != nil {
 		logger.PfcpLog.Errorf("Failed to send PFCP message: %v", err)
@@ -173,7 +171,7 @@ func (pfcpServer *PfcpServer) WriteTo(msg message.Message, addr *net.UDPAddr, ev
 
 	err = pfcpServer.PutTransaction(tx)
 	if err != nil {
-		return err
+		return fmt.Errorf("PutTransaction Error: %v", err)
 	}
 
 	go pfcpServer.StartTxLifeCycle(tx)

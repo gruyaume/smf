@@ -13,7 +13,6 @@ import (
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/pfcp/message"
-	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/omec-project/util/flowdesc"
 )
 
@@ -122,7 +121,7 @@ func EstablishPSA2(smContext *context.SMContext) {
 		if nodeAfterULCL {
 			addr := net.UDPAddr{
 				IP:   curDataPathNode.UPF.NodeID.NodeIdValue,
-				Port: udp.PFCP_PORT,
+				Port: 8805,
 			}
 
 			logger.PduSessLog.Traceln("Send to upf addr: ", addr.String())

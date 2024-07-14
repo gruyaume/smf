@@ -14,7 +14,7 @@ import (
 	"github.com/wmnsk/go-pfcp/message"
 )
 
-func Dispatch(msg *udp.UDPMessage) {
+func Dispatch(msg *udp.Message) {
 	// TODO: Add return status to all handlers
 	msgType := msg.PfcpMessage.MessageType()
 	switch msgType {

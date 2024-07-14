@@ -77,6 +77,7 @@ type SMFContext struct {
 
 	StaticIpInfo             *[]factory.StaticIpInfo
 	CPNodeID                 pfcpType.NodeID
+	PFCPPort                 int
 	UDMProfile               models.NfProfile
 	NrfCacheEvictionInterval time.Duration
 	SBIPort                  int
@@ -184,7 +185,7 @@ func InitSmfContext(config *factory.Config) *SMFContext {
 
 	if pfcp := configuration.PFCP; pfcp != nil {
 		if pfcp.Port == 0 {
-			pfcp.Port = 8805
+			pfcp.Port = factory.DEFAULT_PFCP_PORT
 		}
 		pfcpAddrEnv := os.Getenv(pfcp.Addr)
 		if pfcpAddrEnv != "" {
@@ -199,6 +200,8 @@ func InitSmfContext(config *factory.Config) *SMFContext {
 		if err != nil {
 			logger.CtxLog.Warnf("PFCP Parse Addr Fail: %v", err)
 		}
+
+		smfContext.PFCPPort = int(pfcp.Port)
 
 		smfContext.CPNodeID.NodeIdType = 0
 		smfContext.CPNodeID.NodeIdValue = addr.IP.To4()

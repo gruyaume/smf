@@ -35,7 +35,7 @@ func FindUEIPAddress(createdPDRIEs []*ie.IE) net.IP {
 	return nil
 }
 
-func HandlePfcpHeartbeatRequest(msg *udp.UDPMessage) {
+func HandlePfcpHeartbeatRequest(msg *udp.Message) {
 	_, ok := msg.PfcpMessage.(*message.HeartbeatRequest)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for heartbeat request")
@@ -45,7 +45,7 @@ func HandlePfcpHeartbeatRequest(msg *udp.UDPMessage) {
 	pfcp_message.SendHeartbeatResponse(msg.RemoteAddr, msg.PfcpMessage.Sequence())
 }
 
-func HandlePfcpHeartbeatResponse(msg *udp.UDPMessage) {
+func HandlePfcpHeartbeatResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.HeartbeatResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for heartbeat response")
@@ -119,15 +119,15 @@ func SetUpfInactive(nodeID pfcpType.NodeID, msgTypeName string) {
 	upf.NHeartBeat = 0 // reset Heartbeat attempt to 0
 }
 
-func HandlePfcpPfdManagementRequest(msg *udp.UDPMessage) {
+func HandlePfcpPfdManagementRequest(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP PFD Management Request handling is not implemented")
 }
 
-func HandlePfcpPfdManagementResponse(msg *udp.UDPMessage) {
+func HandlePfcpPfdManagementResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP PFD Management Response handling is not implemented")
 }
 
-func HandlePfcpAssociationSetupRequest(msg *udp.UDPMessage) {
+func HandlePfcpAssociationSetupRequest(msg *udp.Message) {
 	req, ok := msg.PfcpMessage.(*message.AssociationSetupRequest)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for association setup request")
@@ -185,7 +185,7 @@ func HandlePfcpAssociationSetupRequest(msg *udp.UDPMessage) {
 	pfcp_message.SendPfcpAssociationSetupResponse(*nodeID, cause, upf.Port)
 }
 
-func HandlePfcpAssociationSetupResponse(msg *udp.UDPMessage) {
+func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.AssociationSetupResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for association setup response")
@@ -311,15 +311,15 @@ func HandlePfcpAssociationSetupResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpAssociationUpdateRequest(msg *udp.UDPMessage) {
+func HandlePfcpAssociationUpdateRequest(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Association Update Request handling is not implemented")
 }
 
-func HandlePfcpAssociationUpdateResponse(msg *udp.UDPMessage) {
+func HandlePfcpAssociationUpdateResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Association Update Response handling is not implemented")
 }
 
-func HandlePfcpAssociationReleaseRequest(msg *udp.UDPMessage) {
+func HandlePfcpAssociationReleaseRequest(msg *udp.Message) {
 	pfcpMsg, ok := msg.PfcpMessage.(*message.AssociationReleaseRequest)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for association release request")
@@ -353,7 +353,7 @@ func HandlePfcpAssociationReleaseRequest(msg *udp.UDPMessage) {
 	pfcp_message.SendPfcpAssociationReleaseResponse(*nodeID, cause, upf.Port)
 }
 
-func HandlePfcpAssociationReleaseResponse(msg *udp.UDPMessage) {
+func HandlePfcpAssociationReleaseResponse(msg *udp.Message) {
 	pfcpMsg, ok := msg.PfcpMessage.(*message.AssociationReleaseResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for association release response")
@@ -385,27 +385,27 @@ func HandlePfcpAssociationReleaseResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpVersionNotSupportedResponse(msg *udp.UDPMessage) {
+func HandlePfcpVersionNotSupportedResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Version Not Support Response handling is not implemented")
 }
 
-func HandlePfcpNodeReportRequest(msg *udp.UDPMessage) {
+func HandlePfcpNodeReportRequest(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Node Report Request handling is not implemented")
 }
 
-func HandlePfcpNodeReportResponse(msg *udp.UDPMessage) {
+func HandlePfcpNodeReportResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Node Report Response handling is not implemented")
 }
 
-func HandlePfcpSessionSetDeletionRequest(msg *udp.UDPMessage) {
+func HandlePfcpSessionSetDeletionRequest(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Session Set Deletion Request handling is not implemented")
 }
 
-func HandlePfcpSessionSetDeletionResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionSetDeletionResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Session Set Deletion Response handling is not implemented")
 }
 
-func HandlePfcpSessionEstablishmentResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionEstablishmentResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.SessionEstablishmentResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for session establishment response")
@@ -502,7 +502,7 @@ func HandlePfcpSessionEstablishmentResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpSessionModificationResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionModificationResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.SessionModificationResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for session establishment response")
@@ -581,7 +581,7 @@ func HandlePfcpSessionModificationResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpSessionDeletionResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionDeletionResponse(msg *udp.Message) {
 	rsp, ok := msg.PfcpMessage.(*message.SessionDeletionResponse)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for session deletion response")
@@ -637,7 +637,7 @@ func HandlePfcpSessionDeletionResponse(msg *udp.UDPMessage) {
 	}
 }
 
-func HandlePfcpSessionReportRequest(msg *udp.UDPMessage) {
+func HandlePfcpSessionReportRequest(msg *udp.Message) {
 	req, ok := msg.PfcpMessage.(*message.SessionReportRequest)
 	if !ok {
 		logger.PfcpLog.Errorf("Invalid message type for session report request")
@@ -751,6 +751,6 @@ func HandlePfcpSessionReportRequest(msg *udp.UDPMessage) {
 	// pfcp_message.SendPfcpSessionReportResponse(msg.RemoteAddr, cause, seqFromUPF, SEID)
 }
 
-func HandlePfcpSessionReportResponse(msg *udp.UDPMessage) {
+func HandlePfcpSessionReportResponse(msg *udp.Message) {
 	logger.PfcpLog.Warnf("PFCP Session Report Response handling is not implemented")
 }
