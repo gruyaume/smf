@@ -12,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/qos"
 	"github.com/omec-project/smf/util"
@@ -447,7 +446,7 @@ func (dpNode *DataPathNode) CreatePccRuleQer(smContext *SMContext, qosData strin
 		}
 
 		// Rates
-		newQER.MBR = &pfcpType.MBR{
+		newQER.MBR = &MBR{
 			ULMBR: util.BitRateTokbps(refQos.MaxbrUl),
 			DLMBR: util.BitRateTokbps(refQos.MaxbrDl),
 		}
@@ -476,7 +475,7 @@ func (dpNode *DataPathNode) CreateSessRuleQer(smContext *SMContext) (*QER, error
 			ULGate: GateOpen,
 			DLGate: GateOpen,
 		}
-		newQER.MBR = &pfcpType.MBR{
+		newQER.MBR = &MBR{
 			ULMBR: util.BitRateTokbps(sessionRule.AuthSessAmbr.Uplink),
 			DLMBR: util.BitRateTokbps(sessionRule.AuthSessAmbr.Downlink),
 		}
@@ -489,7 +488,7 @@ func (dpNode *DataPathNode) CreateSessRuleQer(smContext *SMContext) (*QER, error
 
 // ActivateUpLinkPdr
 func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER, defPrecedence uint32) error {
-	ueIpAddr := pfcpType.UEIPAddress{}
+	ueIpAddr := UEIPAddress{}
 	if dpNode.UPF.IsUpfSupportUeIpAddrAlloc() {
 		ueIpAddr.CHV4 = true
 	} else {
@@ -518,8 +517,8 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 			logger.CtxLog.Errorf("activate UpLink PDR[%v] failed %v ", name, err)
 			return err
 		} else {
-			ULPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceAccess}
-			ULPDR.PDI.LocalFTeid = &pfcpType.FTEID{
+			ULPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceAccess}
+			ULPDR.PDI.LocalFTeid = &FTEID{
 				V4:          true,
 				Ipv4Address: upIP,
 				Teid:        curULTunnel.TEID,
@@ -530,7 +529,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 			ULPDR.PDI.NetworkInstance = util_3gpp.Dnn(smContext.Dnn)
 		}
 
-		ULPDR.OuterHeaderRemoval = &pfcpType.OuterHeaderRemoval{
+		ULPDR.OuterHeaderRemoval = &OuterHeaderRemoval{
 			OuterHeaderRemovalDescription: OuterHeaderRemovalGtpUUdpIpv4,
 		}
 
@@ -543,15 +542,15 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 			Nocp: false,
 		}
 		ULFAR.ForwardingParameters = &ForwardingParameters{
-			DestinationInterface: pfcpType.DestinationInterface{
-				InterfaceValue: pfcpType.DestinationInterfaceCore,
+			DestinationInterface: DestinationInterface{
+				InterfaceValue: ie.DstInterfaceCore,
 			},
 			NetworkInstance: []byte(smContext.Dnn),
 		}
 
 		if dpNode.IsAnchorUPF() {
 			ULFAR.ForwardingParameters.
-				DestinationInterface.InterfaceValue = pfcpType.DestinationInterfaceSgiLanN6Lan
+				DestinationInterface.InterfaceValue = ie.DstInterfaceSGiLANN6LAN
 		}
 
 		if nextULDest := dpNode.Next(); nextULDest != nil {
@@ -562,7 +561,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 				logger.CtxLog.Errorf("activate UpLink PDR[%v] failed %v ", name, err)
 				return err
 			} else {
-				ULFAR.ForwardingParameters.OuterHeaderCreation = &pfcpType.OuterHeaderCreation{
+				ULFAR.ForwardingParameters.OuterHeaderCreation = &OuterHeaderCreation{
 					OuterHeaderCreationDescription: OuterHeaderCreationGtpUUdpIpv4,
 					Ipv4Address:                    upIP,
 					Teid:                           nextULTunnel.TEID,
@@ -579,7 +578,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 	curDLTunnel := dpNode.DownLinkTunnel
 
 	// UPF provided UE ip-addr
-	ueIpAddr := pfcpType.UEIPAddress{}
+	ueIpAddr := UEIPAddress{}
 	if dpNode.UPF.IsUpfSupportUeIpAddrAlloc() {
 		ueIpAddr.CHV4 = true
 	} else {
@@ -599,7 +598,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 		if dpNode.IsAnchorUPF() {
 			DLPDR.PDI.UEIPAddress = &ueIpAddr
 		} else {
-			DLPDR.OuterHeaderRemoval = &pfcpType.OuterHeaderRemoval{
+			DLPDR.OuterHeaderRemoval = &OuterHeaderRemoval{
 				OuterHeaderRemovalDescription: OuterHeaderRemovalGtpUUdpIpv4,
 			}
 
@@ -608,8 +607,8 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				logger.CtxLog.Errorf("activate Downlink PDR[%v] failed %v ", name, err)
 				return err
 			} else {
-				DLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
-				DLPDR.PDI.LocalFTeid = &pfcpType.FTEID{
+				DLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
+				DLPDR.PDI.LocalFTeid = &FTEID{
 					V4:          true,
 					Ipv4Address: upIP,
 					Teid:        curDLTunnel.TEID,
@@ -642,8 +641,8 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				return err
 			} else {
 				DLFAR.ForwardingParameters = &ForwardingParameters{
-					DestinationInterface: pfcpType.DestinationInterface{InterfaceValue: pfcpType.DestinationInterfaceAccess},
-					OuterHeaderCreation: &pfcpType.OuterHeaderCreation{
+					DestinationInterface: DestinationInterface{InterfaceValue: ie.DstInterfaceAccess},
+					OuterHeaderCreation: &OuterHeaderCreation{
 						OuterHeaderCreationDescription: OuterHeaderCreationGtpUUdpIpv4,
 						Ipv4Address:                    upIP,
 						Teid:                           nextDLTunnel.TEID,
@@ -656,9 +655,9 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				DefaultDLPDR := ANUPF.DownLinkTunnel.PDR["default"] // TODO: Iterate over all PDRs
 				DLFAR := DefaultDLPDR.FAR
 				DLFAR.ForwardingParameters = new(ForwardingParameters)
-				DLFAR.ForwardingParameters.DestinationInterface.InterfaceValue = pfcpType.DestinationInterfaceAccess
+				DLFAR.ForwardingParameters.DestinationInterface.InterfaceValue = ie.DstInterfaceAccess
 				DLFAR.ForwardingParameters.NetworkInstance = []byte(smContext.Dnn)
-				DLFAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
+				DLFAR.ForwardingParameters.OuterHeaderCreation = new(OuterHeaderCreation)
 
 				dlOuterHeaderCreation := DLFAR.ForwardingParameters.OuterHeaderCreation
 				dlOuterHeaderCreation.OuterHeaderCreationDescription = OuterHeaderCreationGtpUUdpIpv4
@@ -712,7 +711,7 @@ func (dataPath *DataPath) ActivateTunnelAndPDR(smContext *SMContext, precedence 
 			}
 		}
 
-		ueIpAddr := pfcpType.UEIPAddress{}
+		ueIpAddr := UEIPAddress{}
 		if curDataPathNode.UPF.IsUpfSupportUeIpAddrAlloc() {
 			ueIpAddr.CHV4 = true
 		} else {
@@ -723,7 +722,7 @@ func (dataPath *DataPath) ActivateTunnelAndPDR(smContext *SMContext, precedence 
 		if curDataPathNode.DownLinkTunnel != nil {
 			if curDataPathNode.DownLinkTunnel.SrcEndPoint == nil {
 				for _, DNDLPDR := range curDataPathNode.DownLinkTunnel.PDR {
-					DNDLPDR.PDI.SourceInterface = pfcpType.SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
+					DNDLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
 					DNDLPDR.PDI.NetworkInstance = util_3gpp.Dnn(smContext.Dnn)
 					DNDLPDR.PDI.UEIPAddress = &ueIpAddr
 				}

@@ -15,14 +15,15 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/omec-project/nas/nasMessage"
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/util/idgenerator"
+	"github.com/omec-project/util/util_3gpp"
 )
 
 var upfPool sync.Map
@@ -57,11 +58,28 @@ func (s UPFStatus) String() string {
 	}
 }
 
+type RecoveryTimeStamp struct {
+	RecoveryTimeStamp time.Time
+}
+
+type UserPlaneIPResourceInformation struct {
+	Ipv4Address     net.IP
+	Ipv6Address     net.IP
+	NetworkInstance util_3gpp.Dnn
+	Assosi          bool
+	Assoni          bool
+	V6              bool
+	V4              bool
+	TeidRange       uint8
+	Teidri          uint8 // 0x00011100
+	SourceInterface uint8 // 0x00001111
+}
+
 type UPF struct {
 	SNssaiInfos        []SnssaiUPFInfo
 	N3Interfaces       []UPFInterfaceInfo
 	N9Interfaces       []UPFInterfaceInfo
-	UPFunctionFeatures *pfcpType.UPFunctionFeatures
+	UPFunctionFeatures *UPFunctionFeatures
 
 	pdrPool sync.Map
 	farPool sync.Map
@@ -75,9 +93,9 @@ type UPF struct {
 	qerIDGenerator *idgenerator.IDGenerator
 	teidGenerator  *idgenerator.IDGenerator
 
-	RecoveryTimeStamp pfcpType.RecoveryTimeStamp
+	RecoveryTimeStamp RecoveryTimeStamp
 	NodeID            NodeID
-	UPIPInfo          pfcpType.UserPlaneIPResourceInformation
+	UPIPInfo          UserPlaneIPResourceInformation
 	UPFStatus         UPFStatus
 	uuid              uuid.UUID
 	Port              uint16
@@ -443,7 +461,7 @@ func (upf *UPF) BuildCreatePdrFromPccRule(rule *models.PccRule) (*PDR, error) {
 	}
 
 	// SDF Filter
-	sdfFilter := pfcpType.SDFFilter{}
+	sdfFilter := SDFFilter{}
 
 	// First Flow
 	flow := rule.FlowInfos[0]
@@ -635,7 +653,7 @@ func (upf *UPF) IsDnnConfigured(sDnn string) bool {
 // IsUpfSupportUeIpAddrAlloc UE IP addr alloc by UPF supported
 func (upf *UPF) IsUpfSupportUeIpAddrAlloc() bool {
 	if upf.UPFunctionFeatures != nil &&
-		(upf.UPFunctionFeatures.SupportedFeatures1&pfcpType.UpFunctionFeatures1Ueip) == pfcpType.UpFunctionFeatures1Ueip {
+		(upf.UPFunctionFeatures.SupportedFeatures1&UpFunctionFeatures1Ueip) == UpFunctionFeatures1Ueip {
 		return true
 	}
 

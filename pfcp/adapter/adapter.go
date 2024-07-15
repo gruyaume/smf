@@ -7,7 +7,6 @@ import (
 	"net"
 	"sync"
 
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/pfcp/udp"
@@ -100,7 +99,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 		return
 	}
 
-	var userPlaneIPResourceInformation *pfcpType.UserPlaneIPResourceInformation
+	var userPlaneIPResourceInformation *context.UserPlaneIPResourceInformation
 	if len(rsp.UserPlaneIPResourceInformation) != 0 {
 		userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
 		if err != nil {
@@ -137,7 +136,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 			logger.PfcpLog.Errorf("pfcp association setup response RecoveryTimeStamp error: %v", err)
 			return
 		}
-		upf.RecoveryTimeStamp = pfcpType.RecoveryTimeStamp{
+		upf.RecoveryTimeStamp = context.RecoveryTimeStamp{
 			RecoveryTimeStamp: recoveryTimestamp,
 		}
 		upf.NHeartBeat = 0 // reset Heartbeat attempt to 0

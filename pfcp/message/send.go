@@ -23,7 +23,6 @@ import (
 	mi "github.com/omec-project/metricfunc/pkg/metricinfo"
 	"github.com/omec-project/nas/nasMessage"
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpType"
 	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
@@ -333,7 +332,7 @@ func SendPfcpSessionDeletionRequest(upNodeID smf_context.NodeID, ctx *smf_contex
 	return seqNum
 }
 
-func SendPfcpSessionReportResponse(addr *net.UDPAddr, cause uint8, pfcpSRflag pfcpType.PFCPSRRspFlags, seqFromUPF uint32, SEID uint64) {
+func SendPfcpSessionReportResponse(addr *net.UDPAddr, cause uint8, pfcpSRflag smf_context.PFCPSRRspFlags, seqFromUPF uint32, SEID uint64) {
 	pfcpMsg := BuildPfcpSessionReportResponse(cause, pfcpSRflag.Drobu, seqFromUPF, SEID)
 	udp.SendPfcp(pfcpMsg, addr, nil)
 	logger.PfcpLog.Infof("Sent PFCP Session Report Response Seq[%d] to NodeID[%s]", seqFromUPF, addr.IP.String())
@@ -352,7 +351,7 @@ func HandlePfcpSendError(msg message.Message, pfcpErr error) {
 		msg.MessageTypeName(), "Out", "Failure", pfcpErr.Error())
 
 	// Refresh SMF DNS Cache incase of any send failure(includes timeout)
-	pfcpType.RefreshDnsHostIpCache()
+	smf_context.RefreshDnsHostIpCache()
 
 	switch msg.MessageType() {
 	case message.MsgTypeSessionEstablishmentRequest:

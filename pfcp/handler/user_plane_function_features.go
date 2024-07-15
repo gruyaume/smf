@@ -8,13 +8,13 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/omec-project/pfcp/pfcpType"
+	"github.com/omec-project/smf/context"
 )
 
-func UnmarshallUserPlaneFunctionFeatures(data []byte) (*pfcpType.UPFunctionFeatures, error) {
+func UnmarshallUserPlaneFunctionFeatures(data []byte) (*context.UPFunctionFeatures, error) {
 	length := uint16(len(data))
 
-	u := &pfcpType.UPFunctionFeatures{}
+	u := &context.UPFunctionFeatures{}
 
 	var idx uint16 = 0
 	// Octet 5 to 6

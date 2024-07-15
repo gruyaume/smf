@@ -9,12 +9,11 @@ import (
 	"net"
 	"reflect"
 
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
-	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/pfcp/message"
 	"github.com/omec-project/util/flowdesc"
+	"github.com/wmnsk/go-pfcp/ie"
 )
 
 func AddPDUSessionAnchorAndULCL(smContext *context.SMContext, nodeID context.NodeID) {
@@ -200,7 +199,7 @@ func EstablishULCL(smContext *context.SMContext) {
 				logger.PduSessLog.Errorf("Error occurs when encoding flow despcription: %s\n", err)
 			}
 
-			UPLinkPDR.PDI.SDFFilter = &pfcpType.SDFFilter{
+			UPLinkPDR.PDI.SDFFilter = &context.SDFFilter{
 				Bid:                     false,
 				Fl:                      false,
 				Spi:                     false,
@@ -286,7 +285,7 @@ func EstablishRANTunnelInfo(smContext *context.SMContext) {
 
 	defaultANUPFDLFAR := defaultANUPF.DownLinkTunnel.PDR["default"].FAR       // TODO: Iterate over all PDRs
 	activatingANUPFDLFAR := activatingANUPF.DownLinkTunnel.PDR["default"].FAR // TODO: Iterate over all PDRs
-	activatingANUPFDLFAR.ApplyAction = smf_context.ApplyAction{
+	activatingANUPFDLFAR.ApplyAction = context.ApplyAction{
 		Buff: false,
 		Drop: false,
 		Dupl: false,
@@ -294,14 +293,14 @@ func EstablishRANTunnelInfo(smContext *context.SMContext) {
 		Nocp: false,
 	}
 	activatingANUPFDLFAR.ForwardingParameters = &context.ForwardingParameters{
-		DestinationInterface: pfcpType.DestinationInterface{
-			InterfaceValue: pfcpType.DestinationInterfaceAccess,
+		DestinationInterface: context.DestinationInterface{
+			InterfaceValue: ie.DstInterfaceAccess,
 		},
 		NetworkInstance: []byte(smContext.Dnn),
 	}
 
 	activatingANUPFDLFAR.State = context.RULE_INITIAL
-	activatingANUPFDLFAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
+	activatingANUPFDLFAR.ForwardingParameters.OuterHeaderCreation = new(context.OuterHeaderCreation)
 	anOuterHeaderCreation := activatingANUPFDLFAR.ForwardingParameters.OuterHeaderCreation
 	anOuterHeaderCreation.OuterHeaderCreationDescription = context.OuterHeaderCreationGtpUUdpIpv4
 	anOuterHeaderCreation.Teid = defaultANUPFDLFAR.ForwardingParameters.OuterHeaderCreation.Teid
@@ -353,7 +352,7 @@ func UpdateRANAndIUPFUpLink(smContext *context.SMContext) {
 					logger.PduSessLog.Errorf("Error occurs when encoding flow despcription: %s\n", err)
 				}
 
-				UPLinkPDR.PDI.SDFFilter = &pfcpType.SDFFilter{
+				UPLinkPDR.PDI.SDFFilter = &context.SDFFilter{
 					Bid:                     false,
 					Fl:                      false,
 					Spi:                     false,

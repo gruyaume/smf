@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/omec-project/pfcp/pfcpType"
+	"github.com/omec-project/smf/context"
 )
 
 const (
@@ -41,8 +41,8 @@ func utob(u uint8) bool {
 	return u != 0
 }
 
-func UnmarshalUEIPInformationBinary(data []byte) (*pfcpType.UserPlaneIPResourceInformation, error) {
-	u := &pfcpType.UserPlaneIPResourceInformation{}
+func UnmarshalUEIPInformationBinary(data []byte) (*context.UserPlaneIPResourceInformation, error) {
+	u := &context.UserPlaneIPResourceInformation{}
 	length := uint16(len(data))
 
 	var idx uint16 = 0

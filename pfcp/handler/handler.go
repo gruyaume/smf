@@ -13,7 +13,6 @@ import (
 
 	mi "github.com/omec-project/metricfunc/pkg/metricinfo"
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpType"
 	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
@@ -159,7 +158,7 @@ func HandlePfcpAssociationSetupRequest(msg *udp.Message) {
 
 	upf.UpfLock.Lock()
 	defer upf.UpfLock.Unlock()
-	var userPlaneIPResourceInformation *pfcpType.UserPlaneIPResourceInformation
+	var userPlaneIPResourceInformation *smf_context.UserPlaneIPResourceInformation
 	if len(req.UserPlaneIPResourceInformation) != 0 {
 		userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(req.UserPlaneIPResourceInformation[0].Payload)
 		if err != nil {
@@ -175,7 +174,7 @@ func HandlePfcpAssociationSetupRequest(msg *udp.Message) {
 		return
 	}
 
-	upf.RecoveryTimeStamp = pfcpType.RecoveryTimeStamp{
+	upf.RecoveryTimeStamp = smf_context.RecoveryTimeStamp{
 		RecoveryTimeStamp: recoveryTimestamp,
 	}
 	upf.NHeartBeat = 0 // reset Heartbeat attempt to 0
@@ -230,7 +229,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 			return
 		}
 
-		var userPlaneIPResourceInformation *pfcpType.UserPlaneIPResourceInformation
+		var userPlaneIPResourceInformation *smf_context.UserPlaneIPResourceInformation
 		if len(rsp.UserPlaneIPResourceInformation) != 0 {
 			userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
 			if err != nil {
@@ -256,7 +255,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 			logger.PfcpLog.Errorf("Failed to parse RecoveryTimeStamp: %+v", err)
 			return
 		}
-		upf.RecoveryTimeStamp = pfcpType.RecoveryTimeStamp{
+		upf.RecoveryTimeStamp = smf_context.RecoveryTimeStamp{
 			RecoveryTimeStamp: recoveryTimestamp,
 		}
 		upf.NHeartBeat = 0 // reset Heartbeat attempt to 0
@@ -651,7 +650,7 @@ func HandlePfcpSessionReportRequest(msg *udp.Message) {
 	seqFromUPF := req.Sequence()
 
 	var cause uint8
-	var pfcpSRflag pfcpType.PFCPSRRspFlags
+	var pfcpSRflag smf_context.PFCPSRRspFlags
 
 	if smContext == nil {
 		logger.PfcpLog.Warnf("PFCP Session Report Request Found SM Context NULL, Request Rejected")
