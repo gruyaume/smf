@@ -211,10 +211,12 @@ func SendPfcpSessionEstablishmentRequest(
 		return fmt.Errorf("PFCP Context not found for NodeID[%v]", upNodeID)
 	}
 
+	nodeIDIPAddress := smf_context.SMF_Self().CPNodeID.ResolveNodeIdToIp()
+
 	pfcpMsg, err := BuildPfcpSessionEstablishmentRequest(
 		sequenceNumber,
-		upNodeIDStr,
-		smf_context.SMF_Self().CPNodeID.ResolveNodeIdToIp(),
+		nodeIDIPAddress.String(),
+		nodeIDIPAddress,
 		pfcpContext.LocalSEID,
 		pdrList,
 		farList,
