@@ -336,7 +336,7 @@ func HandleUpdateN2Msg(txn *transaction.Transaction, response *models.UpdateSmCo
 			if dataPath.Activated {
 				ANUPF := dataPath.FirstDPNode
 				for _, DLPDR := range ANUPF.DownLinkTunnel.PDR {
-					DLPDR.FAR.ApplyAction = pfcpType.ApplyAction{Buff: false, Drop: false, Dupl: false, Forw: true, Nocp: false}
+					DLPDR.FAR.ApplyAction = smf_context.ApplyAction{Buff: false, Drop: false, Dupl: false, Forw: true, Nocp: false}
 					DLPDR.FAR.ForwardingParameters = &smf_context.ForwardingParameters{
 						DestinationInterface: pfcpType.DestinationInterface{
 							InterfaceValue: pfcpType.DestinationInterfaceAccess,

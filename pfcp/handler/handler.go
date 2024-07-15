@@ -105,7 +105,7 @@ func HandlePfcpHeartbeatResponse(msg *udp.Message) {
 	upf.NHeartBeat = 0 // reset Heartbeat attempt to 0
 }
 
-func SetUpfInactive(nodeID pfcpType.NodeID, msgTypeName string) {
+func SetUpfInactive(nodeID smf_context.NodeID, msgTypeName string) {
 	upf := smf_context.RetrieveUPFNodeByNodeID(nodeID)
 	if upf == nil {
 		logger.PfcpLog.Errorf("can't find UPF[%s]", nodeID.ResolveNodeIdToIp().String())

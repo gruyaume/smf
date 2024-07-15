@@ -5,14 +5,13 @@
 package producer
 
 import (
-	"github.com/omec-project/pfcp/pfcpType"
 	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
 	pfcp_message "github.com/omec-project/smf/pfcp/message"
 )
 
 type PFCPState struct {
-	nodeID  pfcpType.NodeID
+	nodeID  smf_context.NodeID
 	pdrList []*smf_context.PDR
 	farList []*smf_context.FAR
 	qerList []*smf_context.QER

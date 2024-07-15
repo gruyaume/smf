@@ -9,8 +9,6 @@ package message
 import (
 	"errors"
 
-	"github.com/omec-project/pfcp"
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/wmnsk/go-pfcp/ie"
@@ -52,14 +50,6 @@ func BuildPfcpAssociationSetupResponse(cause uint8) message.Message {
 		ie.NewRecoveryTimeStamp(udp.ServerStartTime),
 		ie.NewCPFunctionFeatures(0),
 	)
-}
-
-func BuildPfcpAssociationReleaseRequest() (pfcp.PFCPAssociationReleaseRequest, error) {
-	msg := pfcp.PFCPAssociationReleaseRequest{}
-
-	msg.NodeID = &context.SMF_Self().CPNodeID
-
-	return msg, nil
 }
 
 func BuildPfcpAssociationReleaseResponse(cause uint8) message.Message {
@@ -286,7 +276,7 @@ func farToUpdateFAR(far *context.FAR) *ie.IE {
 }
 
 func BuildPfcpSessionEstablishmentRequest(
-	upNodeID pfcpType.NodeID,
+	upNodeID context.NodeID,
 	smContext *context.SMContext,
 	pdrList []*context.PDR,
 	farList []*context.FAR,
@@ -341,7 +331,7 @@ func BuildPfcpSessionEstablishmentRequest(
 
 // TODO: Replace dummy value in PFCP message
 func BuildPfcpSessionModificationRequest(
-	upNodeID pfcpType.NodeID,
+	upNodeID context.NodeID,
 	smContext *context.SMContext,
 	pdrList []*context.PDR,
 	farList []*context.FAR,
@@ -400,7 +390,7 @@ func BuildPfcpSessionModificationRequest(
 }
 
 func BuildPfcpSessionDeletionRequest(
-	upNodeID pfcpType.NodeID,
+	upNodeID context.NodeID,
 	smContext *context.SMContext,
 ) (message.Message, error) {
 	nodeIDtoIP := upNodeID.ResolveNodeIdToIp().String()

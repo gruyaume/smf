@@ -76,7 +76,7 @@ type UPF struct {
 	teidGenerator  *idgenerator.IDGenerator
 
 	RecoveryTimeStamp pfcpType.RecoveryTimeStamp
-	NodeID            pfcpType.NodeID
+	NodeID            NodeID
 	UPIPInfo          pfcpType.UserPlaneIPResourceInformation
 	UPFStatus         UPFStatus
 	uuid              uuid.UUID
@@ -209,7 +209,7 @@ func (upTunnel *UPTunnel) AddDataPath(dataPath *DataPath) {
 
 // *** add unit test ***//
 // NewUPF returns a new UPF context in SMF
-func NewUPF(nodeID *pfcpType.NodeID, ifaces []factory.InterfaceUpfInfoItem) (upf *UPF) {
+func NewUPF(nodeID *NodeID, ifaces []factory.InterfaceUpfInfoItem) (upf *UPF) {
 	upf = new(UPF)
 	upf.uuid = uuid.New()
 
@@ -294,12 +294,12 @@ func (upf *UPF) PFCPAddr() *net.UDPAddr {
 }
 
 // *** add unit test ***//
-func RetrieveUPFNodeByNodeID(nodeID pfcpType.NodeID) *UPF {
+func RetrieveUPFNodeByNodeID(nodeID NodeID) *UPF {
 	var targetUPF *UPF = nil
 	upfPool.Range(func(key, value interface{}) bool {
 		curUPF := value.(*UPF)
 		if curUPF.NodeID.NodeIdType != nodeID.NodeIdType &&
-			(curUPF.NodeID.NodeIdType == pfcpType.NodeIdTypeFqdn || nodeID.NodeIdType == pfcpType.NodeIdTypeFqdn) {
+			(curUPF.NodeID.NodeIdType == NodeIdTypeFqdn || nodeID.NodeIdType == NodeIdTypeFqdn) {
 			curUPFNodeIdIP := curUPF.NodeID.ResolveNodeIdToIp().To4()
 			nodeIdIP := nodeID.ResolveNodeIdToIp().To4()
 			logger.CtxLog.Tracef("RetrieveUPF - upfNodeIdIP:[%+v], nodeIdIP:[%+v]", curUPFNodeIdIP, nodeIdIP)
@@ -318,13 +318,13 @@ func RetrieveUPFNodeByNodeID(nodeID pfcpType.NodeID) *UPF {
 }
 
 // *** add unit test ***//
-func RemoveUPFNodeByNodeID(nodeID pfcpType.NodeID) bool {
+func RemoveUPFNodeByNodeID(nodeID NodeID) bool {
 	upfID := ""
 	upfPool.Range(func(key, value interface{}) bool {
 		upfID = key.(string)
 		upf := value.(*UPF)
 		if upf.NodeID.NodeIdType != nodeID.NodeIdType &&
-			(upf.NodeID.NodeIdType == pfcpType.NodeIdTypeFqdn || nodeID.NodeIdType == pfcpType.NodeIdTypeFqdn) {
+			(upf.NodeID.NodeIdType == NodeIdTypeFqdn || nodeID.NodeIdType == NodeIdTypeFqdn) {
 			upfNodeIdIP := upf.NodeID.ResolveNodeIdToIp().To4()
 			nodeIdIP := nodeID.ResolveNodeIdToIp().To4()
 			logger.CtxLog.Tracef("RemoveUPF - upfNodeIdIP:[%+v], nodeIdIP:[%+v]", upfNodeIdIP, nodeIdIP)

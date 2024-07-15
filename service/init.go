@@ -23,7 +23,6 @@ import (
 	nrf_cache "github.com/omec-project/nrf/nrfcache"
 	"github.com/omec-project/openapi/models"
 	pfcpLogger "github.com/omec-project/pfcp/logger"
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/callback"
 	"github.com/omec-project/smf/consumer"
 	"github.com/omec-project/smf/context"
@@ -351,7 +350,7 @@ func (smf *SMF) Start() {
 	udp.Run(pfcp.Dispatch)
 
 	for _, upf := range context.SMF_Self().UserPlaneInformation.UPFs {
-		if upf.NodeID.NodeIdType == pfcpType.NodeIdTypeFqdn {
+		if upf.NodeID.NodeIdType == context.NodeIdTypeFqdn {
 			logger.AppLog.Infof("Send PFCP Association Request to UPF[%s](%s)\n", upf.NodeID.NodeIdValue,
 				upf.NodeID.ResolveNodeIdToIp().String())
 		} else {

@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
 	smf_pfcp "github.com/omec-project/smf/pfcp"
 	"github.com/omec-project/smf/pfcp/message"
@@ -23,8 +22,8 @@ func TestSendPfcpSessionEstablishmentRequest(t *testing.T) {
 }
 
 func TestSendHeartbeatResponse(t *testing.T) {
-	context.SMF_Self().CPNodeID = pfcpType.NodeID{
-		NodeIdType:  pfcpType.NodeIdTypeIpv4Address,
+	context.SMF_Self().CPNodeID = context.NodeID{
+		NodeIdType:  context.NodeIdTypeIpv4Address,
 		NodeIdValue: net.ParseIP("127.0.0.2").To4(),
 	}
 	udp.Run(smf_pfcp.Dispatch)

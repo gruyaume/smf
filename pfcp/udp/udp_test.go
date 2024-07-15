@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/wmnsk/go-pfcp/ie"
@@ -54,8 +53,8 @@ func SendPfcpMessage(msg message.Message, dstAddr *net.UDPAddr) error {
 }
 
 func TestRun(t *testing.T) {
-	context.SMF_Self().CPNodeID = pfcpType.NodeID{
-		NodeIdType:  pfcpType.NodeIdTypeIpv4Address,
+	context.SMF_Self().CPNodeID = context.NodeID{
+		NodeIdType:  context.NodeIdTypeIpv4Address,
 		NodeIdValue: net.ParseIP("127.0.0.1").To4(),
 	}
 	context.SMF_Self().PFCPPort = 8806

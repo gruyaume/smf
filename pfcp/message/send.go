@@ -47,15 +47,15 @@ func getSeqNumber() uint32 {
 }
 
 func init() {
-	PfcpTxns = make(map[uint32]*pfcpType.NodeID)
+	PfcpTxns = make(map[uint32]*smf_context.NodeID)
 }
 
 var (
-	PfcpTxns    map[uint32]*pfcpType.NodeID
+	PfcpTxns    map[uint32]*smf_context.NodeID
 	PfcpTxnLock sync.Mutex
 )
 
-func FetchPfcpTxn(seqNo uint32) (upNodeID *pfcpType.NodeID) {
+func FetchPfcpTxn(seqNo uint32) (upNodeID *smf_context.NodeID) {
 	PfcpTxnLock.Lock()
 	defer PfcpTxnLock.Unlock()
 	if upNodeID = PfcpTxns[seqNo]; upNodeID != nil {
@@ -64,13 +64,13 @@ func FetchPfcpTxn(seqNo uint32) (upNodeID *pfcpType.NodeID) {
 	return upNodeID
 }
 
-func InsertPfcpTxn(seqNo uint32, upNodeID *pfcpType.NodeID) {
+func InsertPfcpTxn(seqNo uint32, upNodeID *smf_context.NodeID) {
 	PfcpTxnLock.Lock()
 	defer PfcpTxnLock.Unlock()
 	PfcpTxns[seqNo] = upNodeID
 }
 
-func SendHeartbeatRequest(upNodeID pfcpType.NodeID, upfPort uint16) error {
+func SendHeartbeatRequest(upNodeID smf_context.NodeID, upfPort uint16) error {
 	msg := BuildPfcpHeartbeatRequest()
 	addr := &net.UDPAddr{
 		IP:   upNodeID.ResolveNodeIdToIp(),
@@ -112,7 +112,7 @@ func SendHeartbeatRequest(upNodeID pfcpType.NodeID, upfPort uint16) error {
 	return nil
 }
 
-func SendPfcpAssociationSetupRequest(upNodeID pfcpType.NodeID, upfPort uint16) {
+func SendPfcpAssociationSetupRequest(upNodeID smf_context.NodeID, upfPort uint16) {
 	if *factory.SmfConfig.Configuration.KafkaInfo.EnableKafka {
 		// Send Metric event
 		upfStatus := mi.MetricEvent{
@@ -164,7 +164,7 @@ func SendPfcpAssociationSetupRequest(upNodeID pfcpType.NodeID, upfPort uint16) {
 	}
 }
 
-func SendPfcpAssociationSetupResponse(upNodeID pfcpType.NodeID, cause uint8, upfPort uint16) {
+func SendPfcpAssociationSetupResponse(upNodeID smf_context.NodeID, cause uint8, upfPort uint16) {
 	pfcpMsg := BuildPfcpAssociationSetupResponse(cause)
 	addr := &net.UDPAddr{
 		IP:   upNodeID.ResolveNodeIdToIp(),
@@ -174,7 +174,7 @@ func SendPfcpAssociationSetupResponse(upNodeID pfcpType.NodeID, cause uint8, upf
 	logger.PfcpLog.Infof("Sent PFCP Association Response to NodeID[%s]", upNodeID.ResolveNodeIdToIp().String())
 }
 
-func SendPfcpAssociationReleaseResponse(upNodeID pfcpType.NodeID, cause uint8, upfPort uint16) {
+func SendPfcpAssociationReleaseResponse(upNodeID smf_context.NodeID, cause uint8, upfPort uint16) {
 	pfcpMsg := BuildPfcpAssociationReleaseResponse(cause)
 	addr := &net.UDPAddr{
 		IP:   upNodeID.ResolveNodeIdToIp(),
@@ -185,7 +185,7 @@ func SendPfcpAssociationReleaseResponse(upNodeID pfcpType.NodeID, cause uint8, u
 }
 
 func SendPfcpSessionEstablishmentRequest(
-	upNodeID pfcpType.NodeID,
+	upNodeID smf_context.NodeID,
 	ctx *smf_context.SMContext,
 	pdrList []*smf_context.PDR, farList []*smf_context.FAR, barList []*smf_context.BAR, qerList []*smf_context.QER, upfPort uint16,
 ) {
@@ -240,7 +240,7 @@ func SendPfcpSessionEstablishmentRequest(
 	ctx.SubPfcpLog.Infof("Sent PFCP Session Establish Request to NodeID[%s]", ip.String())
 }
 
-func SendPfcpSessionModificationRequest(upNodeID pfcpType.NodeID,
+func SendPfcpSessionModificationRequest(upNodeID smf_context.NodeID,
 	ctx *smf_context.SMContext,
 	pdrList []*smf_context.PDR, farList []*smf_context.FAR, barList []*smf_context.BAR, qerList []*smf_context.QER, upfPort uint16,
 ) (seqNum uint32) {
@@ -287,7 +287,7 @@ func SendPfcpSessionModificationRequest(upNodeID pfcpType.NodeID,
 	return seqNum
 }
 
-func SendPfcpSessionDeletionRequest(upNodeID pfcpType.NodeID, ctx *smf_context.SMContext, upfPort uint16) (seqNum uint32) {
+func SendPfcpSessionDeletionRequest(upNodeID smf_context.NodeID, ctx *smf_context.SMContext, upfPort uint16) (seqNum uint32) {
 	pfcpMsg, err := BuildPfcpSessionDeletionRequest(upNodeID, ctx)
 	if err != nil {
 		ctx.SubPfcpLog.Errorf("Build PFCP Session Deletion Request failed: %v", err)
@@ -451,10 +451,10 @@ func handleSendPfcpSessModReqError(msg message.Message, pfcpErr error) {
 
 type UdpPodPfcpMsg struct {
 	// message type contains in Msg.Header
-	Msg      message.Message `json:"pfcpMsg"`
-	Addr     *net.UDPAddr    `json:"addr"`
-	SmfIp    string          `json:"smfIp"`
-	UpNodeID pfcpType.NodeID `json:"upNodeID"`
+	Msg      message.Message    `json:"pfcpMsg"`
+	Addr     *net.UDPAddr       `json:"addr"`
+	SmfIp    string             `json:"smfIp"`
+	UpNodeID smf_context.NodeID `json:"upNodeID"`
 }
 
 type UdpPodPfcpRspMsg struct {
@@ -479,7 +479,7 @@ func GetLocalIP() string {
 }
 
 // SendPfcpMsgToAdapter send pfcp msg to upf-adapter in http/json encoded format
-func SendPfcpMsgToAdapter(upNodeID pfcpType.NodeID, msg message.Message, addr *net.UDPAddr, eventData interface{}) (*http.Response, error) {
+func SendPfcpMsgToAdapter(upNodeID smf_context.NodeID, msg message.Message, addr *net.UDPAddr, eventData interface{}) (*http.Response, error) {
 	// get IP
 	ip_str := GetLocalIP()
 	udpPodMsg := &UdpPodPfcpMsg{

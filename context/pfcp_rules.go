@@ -53,7 +53,7 @@ type FAR struct {
 	State RuleState
 	FARID uint32
 
-	ApplyAction pfcpType.ApplyAction
+	ApplyAction ApplyAction
 }
 
 // Forwarding Parameters. 7.5.2.3-2
@@ -104,7 +104,7 @@ func (far FAR) String() string {
 		far.FARID, ActionString(far.ApplyAction), far.ForwardingParameters, far.BAR, far.State)
 }
 
-func ActionString(act pfcpType.ApplyAction) string {
+func ActionString(act ApplyAction) string {
 	return fmt.Sprintf("Action:[Dup:%v, Nocp:%v, Buff:%v, Forw:%v, Drop:%v]", act.Dupl, act.Nocp, act.Buff, act.Forw, act.Drop)
 }
 

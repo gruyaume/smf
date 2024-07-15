@@ -535,7 +535,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 		}
 
 		ULFAR := ULPDR.FAR
-		ULFAR.ApplyAction = pfcpType.ApplyAction{
+		ULFAR.ApplyAction = ApplyAction{
 			Buff: false,
 			Drop: false,
 			Dupl: false,
@@ -627,7 +627,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 			logger.PduSessLog.Traceln("In DLPDR OuterHeaderCreation")
 			nextDLTunnel := nextDLDest.DownLinkTunnel
 
-			DLFAR.ApplyAction = pfcpType.ApplyAction{
+			DLFAR.ApplyAction = ApplyAction{
 				Buff: true,
 				Drop: false,
 				Dupl: false,

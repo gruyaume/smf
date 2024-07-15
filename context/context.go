@@ -18,7 +18,6 @@ import (
 	"github.com/omec-project/openapi/Nnrf_NFManagement"
 	"github.com/omec-project/openapi/Nudm_SubscriberDataManagement"
 	"github.com/omec-project/openapi/models"
-	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/metrics"
@@ -50,7 +49,7 @@ type SMFContext struct {
 	BindingIPv4  string
 	RegisterIPv4 string
 
-	UPNodeIDs []pfcpType.NodeID
+	UPNodeIDs []NodeID
 	Key       string
 	PEM       string
 	KeyLog    string
@@ -76,7 +75,7 @@ type SMFContext struct {
 	PodIp                 string
 
 	StaticIpInfo             *[]factory.StaticIpInfo
-	CPNodeID                 pfcpType.NodeID
+	CPNodeID                 NodeID
 	PFCPPort                 int
 	UDMProfile               models.NfProfile
 	NrfCacheEvictionInterval time.Duration

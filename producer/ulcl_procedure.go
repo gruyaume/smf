@@ -11,12 +11,13 @@ import (
 
 	"github.com/omec-project/pfcp/pfcpType"
 	"github.com/omec-project/smf/context"
+	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/pfcp/message"
 	"github.com/omec-project/util/flowdesc"
 )
 
-func AddPDUSessionAnchorAndULCL(smContext *context.SMContext, nodeID pfcpType.NodeID) {
+func AddPDUSessionAnchorAndULCL(smContext *context.SMContext, nodeID context.NodeID) {
 	bpMGR := smContext.BPManager
 	pendingUPF := bpMGR.PendingUPF
 
@@ -285,7 +286,7 @@ func EstablishRANTunnelInfo(smContext *context.SMContext) {
 
 	defaultANUPFDLFAR := defaultANUPF.DownLinkTunnel.PDR["default"].FAR       // TODO: Iterate over all PDRs
 	activatingANUPFDLFAR := activatingANUPF.DownLinkTunnel.PDR["default"].FAR // TODO: Iterate over all PDRs
-	activatingANUPFDLFAR.ApplyAction = pfcpType.ApplyAction{
+	activatingANUPFDLFAR.ApplyAction = smf_context.ApplyAction{
 		Buff: false,
 		Drop: false,
 		Dupl: false,

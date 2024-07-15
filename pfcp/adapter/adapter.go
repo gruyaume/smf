@@ -16,15 +16,15 @@ import (
 )
 
 func init() {
-	PfcpTxns = make(map[uint32]*pfcpType.NodeID)
+	PfcpTxns = make(map[uint32]*context.NodeID)
 }
 
 var (
-	PfcpTxns    map[uint32]*pfcpType.NodeID
+	PfcpTxns    map[uint32]*context.NodeID
 	PfcpTxnLock sync.Mutex
 )
 
-func FetchPfcpTxn(seqNo uint32) (upNodeID *pfcpType.NodeID) {
+func FetchPfcpTxn(seqNo uint32) (upNodeID *context.NodeID) {
 	PfcpTxnLock.Lock()
 	defer PfcpTxnLock.Unlock()
 	if upNodeID = PfcpTxns[seqNo]; upNodeID != nil {
@@ -33,7 +33,7 @@ func FetchPfcpTxn(seqNo uint32) (upNodeID *pfcpType.NodeID) {
 	return upNodeID
 }
 
-func InsertPfcpTxn(seqNo uint32, upNodeID *pfcpType.NodeID) {
+func InsertPfcpTxn(seqNo uint32, upNodeID *context.NodeID) {
 	PfcpTxnLock.Lock()
 	defer PfcpTxnLock.Unlock()
 	PfcpTxns[seqNo] = upNodeID
@@ -408,7 +408,7 @@ func HandlePfcpSessionDeletionResponse(msg *udp.Message) {
 	}
 }
 
-func SetUpfInactive(nodeID pfcpType.NodeID) {
+func SetUpfInactive(nodeID context.NodeID) {
 	upf := context.RetrieveUPFNodeByNodeID(nodeID)
 	if upf == nil {
 		logger.PfcpLog.Errorf("can't find UPF[%s]", nodeID.ResolveNodeIdToIp().String())
