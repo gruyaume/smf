@@ -15,7 +15,6 @@ import (
 	smf_context "github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/transaction"
 	"github.com/omec-project/util/httpwrapper"
-	"github.com/wmnsk/go-pfcp/ie"
 )
 
 type pfcpAction struct {
@@ -339,7 +338,7 @@ func HandleUpdateN2Msg(txn *transaction.Transaction, response *models.UpdateSmCo
 					DLPDR.FAR.ApplyAction = smf_context.ApplyAction{Buff: false, Drop: false, Dupl: false, Forw: true, Nocp: false}
 					DLPDR.FAR.ForwardingParameters = &smf_context.ForwardingParameters{
 						DestinationInterface: smf_context.DestinationInterface{
-							InterfaceValue: ie.DstInterfaceAccess,
+							InterfaceValue: smf_context.DestinationInterfaceAccess,
 						},
 						NetworkInstance: []byte(smContext.Dnn),
 					}

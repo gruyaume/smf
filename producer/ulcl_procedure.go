@@ -13,7 +13,6 @@ import (
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/pfcp/message"
 	"github.com/omec-project/util/flowdesc"
-	"github.com/wmnsk/go-pfcp/ie"
 )
 
 func AddPDUSessionAnchorAndULCL(smContext *context.SMContext, nodeID context.NodeID) {
@@ -294,7 +293,7 @@ func EstablishRANTunnelInfo(smContext *context.SMContext) {
 	}
 	activatingANUPFDLFAR.ForwardingParameters = &context.ForwardingParameters{
 		DestinationInterface: context.DestinationInterface{
-			InterfaceValue: ie.DstInterfaceAccess,
+			InterfaceValue: context.DestinationInterfaceAccess,
 		},
 		NetworkInstance: []byte(smContext.Dnn),
 	}
