@@ -17,6 +17,7 @@ import (
 	"github.com/omec-project/smf/factory"
 	"github.com/omec-project/smf/logger"
 	"github.com/omec-project/smf/metrics"
+	"github.com/omec-project/smf/pfcp/ies"
 	pfcp_message "github.com/omec-project/smf/pfcp/message"
 	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/omec-project/smf/producer"
@@ -160,7 +161,7 @@ func HandlePfcpAssociationSetupRequest(msg *udp.Message) {
 	defer upf.UpfLock.Unlock()
 	var userPlaneIPResourceInformation *smf_context.UserPlaneIPResourceInformation
 	if len(req.UserPlaneIPResourceInformation) != 0 {
-		userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(req.UserPlaneIPResourceInformation[0].Payload)
+		userPlaneIPResourceInformation, err = ies.UnmarshalUEIPInformationBinary(req.UserPlaneIPResourceInformation[0].Payload)
 		if err != nil {
 			logger.PfcpLog.Errorf("failed to get UserPlaneIPResourceInformation: %+v", err)
 			return
@@ -231,7 +232,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 
 		var userPlaneIPResourceInformation *smf_context.UserPlaneIPResourceInformation
 		if len(rsp.UserPlaneIPResourceInformation) != 0 {
-			userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
+			userPlaneIPResourceInformation, err = ies.UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
 			if err != nil {
 				logger.PfcpLog.Errorf("failed to get UserPlaneIPResourceInformation: %+v", err)
 				return
@@ -274,7 +275,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 
 		// Supported Features of UPF
 		if rsp.UPFunctionFeatures != nil {
-			UPFunctionFeatures, err := UnmarshallUserPlaneFunctionFeatures(rsp.UPFunctionFeatures.Payload)
+			UPFunctionFeatures, err := ies.UnmarshallUserPlaneFunctionFeatures(rsp.UPFunctionFeatures.Payload)
 			if err != nil {
 				logger.PfcpLog.Warnf("TO DELETE: failed to get UPFunctionFeatures: %+v", err)
 				return

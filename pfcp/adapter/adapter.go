@@ -9,6 +9,7 @@ import (
 
 	"github.com/omec-project/smf/context"
 	"github.com/omec-project/smf/logger"
+	"github.com/omec-project/smf/pfcp/ies"
 	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/wmnsk/go-pfcp/ie"
 	"github.com/wmnsk/go-pfcp/message"
@@ -101,7 +102,7 @@ func HandlePfcpAssociationSetupResponse(msg *udp.Message) {
 
 	var userPlaneIPResourceInformation *context.UserPlaneIPResourceInformation
 	if len(rsp.UserPlaneIPResourceInformation) != 0 {
-		userPlaneIPResourceInformation, err = UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
+		userPlaneIPResourceInformation, err = ies.UnmarshalUEIPInformationBinary(rsp.UserPlaneIPResourceInformation[0].Payload)
 		if err != nil {
 			logger.PfcpLog.Errorf("failed to get UserPlaneIPResourceInformation: %+v", err)
 			return

@@ -1,8 +1,10 @@
 // Copyright 2024 Canonical Ltd.
 //
 // SPDX-License-Identifier: Apache-2.0
+//
+// This file exists because the way SupportedFeatures are represented here is different from the go-pfcp library.
 
-package handler
+package ies
 
 import (
 	"encoding/binary"

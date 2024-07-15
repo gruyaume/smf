@@ -6,7 +6,7 @@
 // This file should be removed from the project as we get rid of the User Plane IP Resource Information
 // IE in the PFCP Association Setup Response Message
 
-package adapter
+package ies
 
 import (
 	"fmt"

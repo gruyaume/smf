@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2024 Canonical Ltd.
+
 package context
 
 import (
@@ -26,7 +29,7 @@ func NewNodeID(nodeID string) *NodeID {
 	if ip == nil {
 		return &NodeID{
 			NodeIdType:  NodeIdTypeFqdn,
-			NodeIdValue: ip,
+			NodeIdValue: []byte(nodeID),
 		}
 	} else if ip.To4() != nil {
 		return &NodeID{
@@ -53,7 +56,7 @@ func (n *NodeID) ResolveNodeIdToIp() net.IP {
 				return net.IPv4zero
 			} else {
 				logger.CtxLog.Infof("host [%v] dns resolved, updating smf dns cache ", string(n.NodeIdValue))
-				insertDnsHostIp(string(n.NodeIdValue), net.ParseIP(ns[0]))
+				InsertDnsHostIp(string(n.NodeIdValue), net.ParseIP(ns[0]))
 				return net.ParseIP(ns[0])
 			}
 		} else {
@@ -99,7 +102,7 @@ func getDnsHostIp(hostName string) (net.IP, error) {
 	}
 }
 
-func insertDnsHostIp(hostName string, ip net.IP) {
+func InsertDnsHostIp(hostName string, ip net.IP) {
 	dnsHostIpCache[hostName] = ip
 }
 
