@@ -531,7 +531,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 		}
 
 		ULPDR.OuterHeaderRemoval = &pfcpType.OuterHeaderRemoval{
-			OuterHeaderRemovalDescription: pfcpType.OuterHeaderRemovalGtpUUdpIpv4,
+			OuterHeaderRemovalDescription: OuterHeaderRemovalGtpUUdpIpv4,
 		}
 
 		ULFAR := ULPDR.FAR
@@ -563,7 +563,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 				return err
 			} else {
 				ULFAR.ForwardingParameters.OuterHeaderCreation = &pfcpType.OuterHeaderCreation{
-					OuterHeaderCreationDescription: pfcpType.OuterHeaderCreationGtpUUdpIpv4,
+					OuterHeaderCreationDescription: OuterHeaderCreationGtpUUdpIpv4,
 					Ipv4Address:                    upIP,
 					Teid:                           nextULTunnel.TEID,
 				}
@@ -600,7 +600,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 			DLPDR.PDI.UEIPAddress = &ueIpAddr
 		} else {
 			DLPDR.OuterHeaderRemoval = &pfcpType.OuterHeaderRemoval{
-				OuterHeaderRemovalDescription: pfcpType.OuterHeaderRemovalGtpUUdpIpv4,
+				OuterHeaderRemovalDescription: OuterHeaderRemovalGtpUUdpIpv4,
 			}
 
 			iface = DLDestUPF.GetInterface(models.UpInterfaceType_N9, smContext.Dnn)
@@ -644,7 +644,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				DLFAR.ForwardingParameters = &ForwardingParameters{
 					DestinationInterface: pfcpType.DestinationInterface{InterfaceValue: pfcpType.DestinationInterfaceAccess},
 					OuterHeaderCreation: &pfcpType.OuterHeaderCreation{
-						OuterHeaderCreationDescription: pfcpType.OuterHeaderCreationGtpUUdpIpv4,
+						OuterHeaderCreationDescription: OuterHeaderCreationGtpUUdpIpv4,
 						Ipv4Address:                    upIP,
 						Teid:                           nextDLTunnel.TEID,
 					},
@@ -661,7 +661,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				DLFAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
 
 				dlOuterHeaderCreation := DLFAR.ForwardingParameters.OuterHeaderCreation
-				dlOuterHeaderCreation.OuterHeaderCreationDescription = pfcpType.OuterHeaderCreationGtpUUdpIpv4
+				dlOuterHeaderCreation.OuterHeaderCreationDescription = OuterHeaderCreationGtpUUdpIpv4
 				dlOuterHeaderCreation.Teid = smContext.Tunnel.ANInformation.TEID
 				dlOuterHeaderCreation.Ipv4Address = smContext.Tunnel.ANInformation.IPAddress.To4()
 			}
