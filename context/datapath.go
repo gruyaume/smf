@@ -16,7 +16,6 @@ import (
 	"github.com/omec-project/smf/qos"
 	"github.com/omec-project/smf/util"
 	"github.com/omec-project/util/util_3gpp"
-	"github.com/wmnsk/go-pfcp/ie"
 )
 
 // GTPTunnel represents the GTP tunnel information
@@ -517,7 +516,7 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 			logger.CtxLog.Errorf("activate UpLink PDR[%v] failed %v ", name, err)
 			return err
 		} else {
-			ULPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceAccess}
+			ULPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: SourceInterfaceAccess}
 			ULPDR.PDI.LocalFTeid = &FTEID{
 				V4:          true,
 				Ipv4Address: upIP,
@@ -543,14 +542,14 @@ func (dpNode *DataPathNode) ActivateUpLinkPdr(smContext *SMContext, defQER *QER,
 		}
 		ULFAR.ForwardingParameters = &ForwardingParameters{
 			DestinationInterface: DestinationInterface{
-				InterfaceValue: ie.DstInterfaceCore,
+				InterfaceValue: DestinationInterfaceCore,
 			},
 			NetworkInstance: []byte(smContext.Dnn),
 		}
 
 		if dpNode.IsAnchorUPF() {
 			ULFAR.ForwardingParameters.
-				DestinationInterface.InterfaceValue = ie.DstInterfaceSGiLANN6LAN
+				DestinationInterface.InterfaceValue = DestinationInterfaceSgiLanN6Lan
 		}
 
 		if nextULDest := dpNode.Next(); nextULDest != nil {
@@ -607,7 +606,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				logger.CtxLog.Errorf("activate Downlink PDR[%v] failed %v ", name, err)
 				return err
 			} else {
-				DLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
+				DLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: SourceInterfaceCore}
 				DLPDR.PDI.LocalFTeid = &FTEID{
 					V4:          true,
 					Ipv4Address: upIP,
@@ -641,7 +640,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				return err
 			} else {
 				DLFAR.ForwardingParameters = &ForwardingParameters{
-					DestinationInterface: DestinationInterface{InterfaceValue: ie.DstInterfaceAccess},
+					DestinationInterface: DestinationInterface{InterfaceValue: DestinationInterfaceAccess},
 					OuterHeaderCreation: &OuterHeaderCreation{
 						OuterHeaderCreationDescription: OuterHeaderCreationGtpUUdpIpv4,
 						Ipv4Address:                    upIP,
@@ -655,7 +654,7 @@ func (dpNode *DataPathNode) ActivateDlLinkPdr(smContext *SMContext, defQER *QER,
 				DefaultDLPDR := ANUPF.DownLinkTunnel.PDR["default"] // TODO: Iterate over all PDRs
 				DLFAR := DefaultDLPDR.FAR
 				DLFAR.ForwardingParameters = new(ForwardingParameters)
-				DLFAR.ForwardingParameters.DestinationInterface.InterfaceValue = ie.DstInterfaceAccess
+				DLFAR.ForwardingParameters.DestinationInterface.InterfaceValue = DestinationInterfaceAccess
 				DLFAR.ForwardingParameters.NetworkInstance = []byte(smContext.Dnn)
 				DLFAR.ForwardingParameters.OuterHeaderCreation = new(OuterHeaderCreation)
 
@@ -722,7 +721,7 @@ func (dataPath *DataPath) ActivateTunnelAndPDR(smContext *SMContext, precedence 
 		if curDataPathNode.DownLinkTunnel != nil {
 			if curDataPathNode.DownLinkTunnel.SrcEndPoint == nil {
 				for _, DNDLPDR := range curDataPathNode.DownLinkTunnel.PDR {
-					DNDLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: ie.SrcInterfaceCore}
+					DNDLPDR.PDI.SourceInterface = SourceInterface{InterfaceValue: SourceInterfaceCore}
 					DNDLPDR.PDI.NetworkInstance = util_3gpp.Dnn(smContext.Dnn)
 					DNDLPDR.PDI.UEIPAddress = &ueIpAddr
 				}

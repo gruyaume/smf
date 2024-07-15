@@ -4,6 +4,17 @@
 
 package context
 
+const (
+	SourceInterfaceAccess uint8 = iota
+	SourceInterfaceCore
+)
+
+const (
+	DestinationInterfaceAccess uint8 = iota
+	DestinationInterfaceCore
+	DestinationInterfaceSgiLanN6Lan
+)
+
 type SourceInterface struct {
 	InterfaceValue uint8 // 0x00001111
 }

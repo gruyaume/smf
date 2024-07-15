@@ -50,11 +50,11 @@ func UnmarshalUEIPInformationBinary(data []byte) (*context.UserPlaneIPResourceIn
 	if length < idx+1 {
 		return nil, fmt.Errorf("inadequate TLV length: %d", length)
 	}
-	u.Assosi = utob(uint8(data[idx]) & BitMask7)
-	u.Assoni = utob(uint8(data[idx]) & BitMask6)
-	u.Teidri = uint8(data[idx]) >> 2 & Mask3
-	u.V6 = utob(uint8(data[idx]) & BitMask2)
-	u.V4 = utob(uint8(data[idx]) & BitMask1)
+	u.Assosi = utob(data[idx] & BitMask7)
+	u.Assoni = utob(data[idx] & BitMask6)
+	u.Teidri = data[idx] >> 2 & Mask3
+	u.V6 = utob(data[idx] & BitMask2)
+	u.V4 = utob(data[idx] & BitMask1)
 	idx = idx + 1
 
 	// Octet 6
@@ -62,7 +62,7 @@ func UnmarshalUEIPInformationBinary(data []byte) (*context.UserPlaneIPResourceIn
 		if length < idx+1 {
 			return nil, fmt.Errorf("inadequate TLV length: %d", length)
 		}
-		u.TeidRange = uint8(data[idx])
+		u.TeidRange = data[idx]
 		idx = idx + 1
 	}
 

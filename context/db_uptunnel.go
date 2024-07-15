@@ -67,20 +67,12 @@ type PFCPSessionContextInDB struct {
 
 type PFCPContextInDB map[string]PFCPSessionContextInDB
 
-func GetNodeIDInDB(nodeID NodeID) (nodeIDInDB NodeIDInDB) {
-	nodeIDInDB = NodeIDInDB{
-		NodeIdType:  nodeID.NodeIdType,
-		NodeIdValue: nodeID.NodeIdValue,
-	}
-	return nodeIDInDB
+func GetNodeIDInDB(nodeID NodeID) NodeIDInDB {
+	return NodeIDInDB(nodeID)
 }
 
-func GetNodeID(nodeIDInDB NodeIDInDB) (nodeID NodeID) {
-	nodeID = NodeID{
-		NodeIdType:  nodeIDInDB.NodeIdType,
-		NodeIdValue: nodeIDInDB.NodeIdValue,
-	}
-	return nodeID
+func GetNodeID(nodeIDInDB NodeIDInDB) NodeID {
+	return NodeID(nodeIDInDB)
 }
 
 func testEq(a, b []byte) bool {
