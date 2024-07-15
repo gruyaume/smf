@@ -45,7 +45,7 @@ func HandlePDUSessionResourceSetupResponseTransfer(b []byte, ctx *SMContext) (er
 			for _, DLPDR := range ANUPF.DownLinkTunnel.PDR {
 				DLPDR.FAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
 				dlOuterHeaderCreation := DLPDR.FAR.ForwardingParameters.OuterHeaderCreation
-				dlOuterHeaderCreation.OuterHeaderCreationDescription = pfcpType.OuterHeaderCreationGtpUUdpIpv4
+				dlOuterHeaderCreation.OuterHeaderCreationDescription = OuterHeaderCreationGtpUUdpIpv4
 				dlOuterHeaderCreation.Teid = teid
 				dlOuterHeaderCreation.Ipv4Address = ctx.Tunnel.ANInformation.IPAddress.To4()
 			}
@@ -114,7 +114,7 @@ func HandlePathSwitchRequestTransfer(b []byte, ctx *SMContext) error {
 			for _, DLPDR := range ANUPF.DownLinkTunnel.PDR {
 				DLPDR.FAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
 				dlOuterHeaderCreation := DLPDR.FAR.ForwardingParameters.OuterHeaderCreation
-				dlOuterHeaderCreation.OuterHeaderCreationDescription = pfcpType.OuterHeaderCreationGtpUUdpIpv4
+				dlOuterHeaderCreation.OuterHeaderCreationDescription = OuterHeaderCreationGtpUUdpIpv4
 				dlOuterHeaderCreation.Teid = teid
 				dlOuterHeaderCreation.Ipv4Address = gtpTunnel.TransportLayerAddress.Value.Bytes
 				DLPDR.FAR.State = RULE_UPDATE
@@ -173,7 +173,7 @@ func HandleHandoverRequestAcknowledgeTransfer(b []byte, ctx *SMContext) (err err
 			for _, DLPDR := range ANUPF.DownLinkTunnel.PDR {
 				DLPDR.FAR.ForwardingParameters.OuterHeaderCreation = new(pfcpType.OuterHeaderCreation)
 				dlOuterHeaderCreation := DLPDR.FAR.ForwardingParameters.OuterHeaderCreation
-				dlOuterHeaderCreation.OuterHeaderCreationDescription = pfcpType.OuterHeaderCreationGtpUUdpIpv4
+				dlOuterHeaderCreation.OuterHeaderCreationDescription = OuterHeaderCreationGtpUUdpIpv4
 				dlOuterHeaderCreation.Teid = uint32(teid)
 				dlOuterHeaderCreation.Ipv4Address = GTPTunnel.TransportLayerAddress.Value.Bytes
 				DLPDR.FAR.State = RULE_UPDATE
