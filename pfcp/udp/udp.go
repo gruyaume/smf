@@ -59,7 +59,6 @@ func Run(Dispatch func(*Message)) {
 		IP:   net.ParseIP(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()),
 		Port: context.SMF_Self().PFCPPort,
 	}
-	fmt.Println("Address: ", addr)
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		logger.PfcpLog.Errorf("Failed to listen on %s: %v", addr.String(), err)
@@ -74,10 +73,6 @@ func Run(Dispatch func(*Message)) {
 	go func() {
 		for {
 			remoteAddr, pfcpMessage, eventData, err := readPfcpMessage()
-			fmt.Println("Received message: ", remoteAddr, pfcpMessage, eventData, err)
-			if pfcpMessage != nil {
-				fmt.Println("Message type: ", pfcpMessage.MessageTypeName())
-			}
 			if err != nil {
 				if err.Error() == "Receive resend PFCP request" {
 					logger.PfcpLog.Infoln(err)
