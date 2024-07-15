@@ -27,6 +27,11 @@ func (t *TxTable) Store(sequenceNumber uint32, tx *Transaction) {
 }
 
 func (t *TxTable) Load(sequenceNumber uint32) (*Transaction, bool) {
+	if t == nil {
+		logger.PfcpLog.Warnf("TxTable is nil")
+		return nil, false
+	}
+
 	tx, ok := t.m.Load(sequenceNumber)
 	if ok {
 		return tx.(*Transaction), ok

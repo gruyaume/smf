@@ -356,7 +356,10 @@ func (smf *SMF) Start() {
 		} else {
 			logger.AppLog.Infof("Send PFCP Association Request to UPF[%s]\n", upf.NodeID.ResolveNodeIdToIp().String())
 		}
-		message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+		err := message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+		if err != nil {
+			logger.AppLog.Errorf("Send PFCP Association Request failed: %v", err)
+		}
 	}
 
 	// Trigger PFCP Heartbeat towards all connected UPFs

@@ -7,55 +7,54 @@
 package message
 
 import (
-	"errors"
+	"net"
+	"time"
 
 	"github.com/omec-project/smf/context"
-	"github.com/omec-project/smf/pfcp/udp"
 	"github.com/wmnsk/go-pfcp/ie"
 	"github.com/wmnsk/go-pfcp/message"
 )
 
 type Flag uint8
 
-// BuildPfcpHeartbeatRequest shall trigger hearbeat request to all Attached UPFs
-func BuildPfcpHeartbeatRequest() message.Message {
+func BuildPfcpHeartbeatRequest(sequenceNumber uint32, recoveryTimeStamp time.Time) message.Message {
 	return message.NewHeartbeatRequest(
-		getSeqNumber(),
-		ie.NewRecoveryTimeStamp(udp.ServerStartTime),
+		sequenceNumber,
+		ie.NewRecoveryTimeStamp(recoveryTimeStamp),
 		nil,
 	)
 }
 
-func BuildPfcpHeartbeatResponse() message.Message {
+func BuildPfcpHeartbeatResponse(sequenceNumber uint32, recoveryTimeStamp time.Time) message.Message {
 	return message.NewHeartbeatResponse(
-		seq,
-		ie.NewRecoveryTimeStamp(udp.ServerStartTime),
+		sequenceNumber,
+		ie.NewRecoveryTimeStamp(recoveryTimeStamp),
 	)
 }
 
-func BuildPfcpAssociationSetupRequest() message.Message {
+func BuildPfcpAssociationSetupRequest(sequenceNumber uint32, recoveryTimeStamp time.Time, nodeID string) message.Message {
 	return message.NewAssociationSetupRequest(
-		getSeqNumber(),
-		ie.NewNodeIDHeuristic(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()),
-		ie.NewRecoveryTimeStamp(udp.ServerStartTime),
+		sequenceNumber,
+		ie.NewNodeIDHeuristic(nodeID),
+		ie.NewRecoveryTimeStamp(recoveryTimeStamp),
 		ie.NewCPFunctionFeatures(0),
 	)
 }
 
-func BuildPfcpAssociationSetupResponse(cause uint8) message.Message {
+func BuildPfcpAssociationSetupResponse(cause uint8, recoveryTimeStamp time.Time, nodeID string) message.Message {
 	return message.NewAssociationSetupResponse(
 		1,
-		ie.NewNodeIDHeuristic(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()),
+		ie.NewNodeIDHeuristic(nodeID),
 		ie.NewCause(cause),
-		ie.NewRecoveryTimeStamp(udp.ServerStartTime),
+		ie.NewRecoveryTimeStamp(recoveryTimeStamp),
 		ie.NewCPFunctionFeatures(0),
 	)
 }
 
-func BuildPfcpAssociationReleaseResponse(cause uint8) message.Message {
+func BuildPfcpAssociationReleaseResponse(cause uint8, nodeID string) message.Message {
 	return message.NewAssociationReleaseResponse(
 		1,
-		ie.NewNodeIDHeuristic(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()),
+		ie.NewNodeIDHeuristic(nodeID),
 		ie.NewCause(cause),
 	)
 }
@@ -276,22 +275,17 @@ func farToUpdateFAR(far *context.FAR) *ie.IE {
 }
 
 func BuildPfcpSessionEstablishmentRequest(
-	upNodeID context.NodeID,
-	smContext *context.SMContext,
+	sequenceNumber uint32,
+	nodeID string,
+	fseidIpv4Address net.IP,
+	localSeid uint64,
 	pdrList []*context.PDR,
 	farList []*context.FAR,
 	qerList []*context.QER,
 ) (message.Message, error) {
-	nodeIDstr := upNodeID.ResolveNodeIdToIp().String()
-	pfcpContext, ok := smContext.PFCPContext[nodeIDstr]
-	if !ok {
-		return nil, errors.New("PFCP context not found for UP Node ID: " + nodeIDstr)
-	}
-	seid := pfcpContext.LocalSEID
-
 	ies := make([]*ie.IE, 0)
-	ies = append(ies, ie.NewNodeIDHeuristic(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()))
-	ies = append(ies, ie.NewFSEID(seid, context.SMF_Self().CPNodeID.ResolveNodeIdToIp(), nil))
+	ies = append(ies, ie.NewNodeIDHeuristic(nodeID))
+	ies = append(ies, ie.NewFSEID(localSeid, fseidIpv4Address, nil))
 
 	for _, pdr := range pdrList {
 		if pdr.State == context.RULE_INITIAL {
@@ -323,7 +317,7 @@ func BuildPfcpSessionEstablishmentRequest(
 		1,
 		0,
 		0,
-		getSeqNumber(),
+		sequenceNumber,
 		0,
 		ies...,
 	), nil
@@ -331,22 +325,16 @@ func BuildPfcpSessionEstablishmentRequest(
 
 // TODO: Replace dummy value in PFCP message
 func BuildPfcpSessionModificationRequest(
-	upNodeID context.NodeID,
-	smContext *context.SMContext,
+	sequenceNumber uint32,
+	localSEID uint64,
+	remoteSEID uint64,
+	fseidIPv4Address net.IP,
 	pdrList []*context.PDR,
 	farList []*context.FAR,
 	qerList []*context.QER,
 ) (message.Message, error) {
 	ies := make([]*ie.IE, 0)
-	nodeIDtoIP := upNodeID.ResolveNodeIdToIp().String()
-
-	pfcpContext, ok := smContext.PFCPContext[nodeIDtoIP]
-	if !ok {
-		return nil, errors.New("PFCP context not found for UP Node ID: " + nodeIDtoIP)
-	}
-	localSEID := pfcpContext.LocalSEID
-	remoteSEID := pfcpContext.RemoteSEID
-	ies = append(ies, ie.NewFSEID(localSEID, context.SMF_Self().CPNodeID.ResolveNodeIdToIp(), nil))
+	ies = append(ies, ie.NewFSEID(localSEID, fseidIPv4Address, nil))
 
 	for _, pdr := range pdrList {
 		switch pdr.State {
@@ -383,31 +371,26 @@ func BuildPfcpSessionModificationRequest(
 		0,
 		0,
 		remoteSEID,
-		getSeqNumber(),
+		sequenceNumber,
 		0,
 		ies...,
 	), nil
 }
 
 func BuildPfcpSessionDeletionRequest(
-	upNodeID context.NodeID,
-	smContext *context.SMContext,
-) (message.Message, error) {
-	nodeIDtoIP := upNodeID.ResolveNodeIdToIp().String()
-	pfcpContext, ok := smContext.PFCPContext[nodeIDtoIP]
-	if !ok {
-		return nil, errors.New("PFCP context not found for UP Node ID: " + nodeIDtoIP)
-	}
-	localSEID := pfcpContext.LocalSEID
-	remoteSEID := pfcpContext.RemoteSEID
+	sequenceNumber uint32,
+	localSEID uint64,
+	remoteSEID uint64,
+	fseidIPv4Address net.IP,
+) message.Message {
 	return message.NewSessionDeletionRequest(
 		1,
 		0,
 		remoteSEID,
-		getSeqNumber(),
+		sequenceNumber,
 		12,
-		ie.NewFSEID(localSEID, context.SMF_Self().CPNodeID.ResolveNodeIdToIp(), nil),
-	), nil
+		ie.NewFSEID(localSEID, fseidIPv4Address, nil),
+	)
 }
 
 func BuildPfcpSessionReportResponse(cause uint8, drobu bool, seqFromUPF uint32, seid uint64) message.Message {

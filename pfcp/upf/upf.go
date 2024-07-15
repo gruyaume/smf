@@ -54,7 +54,10 @@ func ProbeInactiveUpfs(upfs *context.UserPlaneInformation) {
 		for _, upf := range upfs.UPFs {
 			upf.UPF.UpfLock.Lock()
 			if upf.UPF.UPFStatus == context.NotAssociated {
-				message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+				err := message.SendPfcpAssociationSetupRequest(upf.NodeID, upf.Port)
+				if err != nil {
+					logger.PfcpLog.Errorf("send pfcp association setup request failed: %v ", err)
+				}
 			}
 			upf.UPF.UpfLock.Unlock()
 		}
