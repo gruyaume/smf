@@ -122,7 +122,6 @@ func createPDIIE(pdi *context.PDI) *ie.IE {
 	}
 
 	if pdi.SDFFilter != nil {
-		// There seems to be something wrong here, bid should be false
 		createPDIIes = append(createPDIIes, ie.NewSDFFilter(
 			string(pdi.SDFFilter.FlowDescription),
 			string(pdi.SDFFilter.TosTrafficClass),

@@ -69,8 +69,8 @@ type Transaction struct {
 }
 
 // NewTransaction - create pfcp transaction object
-func NewTransaction(pfcpMSG message.Message, binaryMSG []byte, Conn *net.UDPConn, DestAddr *net.UDPAddr, eventData interface{}) (tx *Transaction) {
-	tx = &Transaction{
+func NewTransaction(pfcpMSG message.Message, binaryMSG []byte, Conn *net.UDPConn, DestAddr *net.UDPAddr, eventData interface{}) *Transaction {
+	tx := &Transaction{
 		SendMsg:        binaryMSG,
 		SequenceNumber: pfcpMSG.Sequence(),
 		MessageType:    pfcpMSG.MessageType(),
@@ -87,9 +87,8 @@ func NewTransaction(pfcpMSG message.Message, binaryMSG []byte, Conn *net.UDPConn
 		tx.TxType = SendingResponse
 		tx.ConsumerAddr = DestAddr.String()
 	}
-
 	logger.PfcpLog.Tracef("New Transaction SEQ[%d] DestAddr[%s]", tx.SequenceNumber, DestAddr.String())
-	return
+	return tx
 }
 
 func (transaction *Transaction) Start() error {
@@ -98,7 +97,6 @@ func (transaction *Transaction) Start() error {
 	if transaction.TxType == SendingRequest {
 		for iter := 0; iter < NumOfResend; iter++ {
 			timer := time.NewTimer(ResendRequestTimeOutPeriod * time.Second)
-
 			_, err := transaction.Conn.WriteToUDP(transaction.SendMsg, transaction.DestAddr)
 			if err != nil {
 				logger.PfcpLog.Warnf("Request Transaction [%d]: %s\n", transaction.SequenceNumber, err)

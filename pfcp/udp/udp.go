@@ -31,8 +31,7 @@ type PfcpEventData struct {
 }
 
 type PfcpServer struct {
-	Addr string
-	Port int
+	Addr *net.UDPAddr
 	Conn *net.UDPConn
 	// Consumer Table
 	// Map Consumer IP to its tx table
@@ -55,52 +54,59 @@ func (t *ConsumerTable) Store(consumerAddr string, txTable *TxTable) {
 	t.m.Store(consumerAddr, txTable)
 }
 
-func (pfcpServer *PfcpServer) Listen() error {
-	var serverIp net.IP
-	if pfcpServer.Addr == "" {
-		serverIp = net.IPv4zero
-	} else {
-		serverIp = net.ParseIP(pfcpServer.Addr)
-	}
-
-	addr := &net.UDPAddr{
-		IP:   serverIp,
-		Port: pfcpServer.Port,
-	}
-
-	conn, err := net.ListenUDP("udp", addr)
-	pfcpServer.Conn = conn
-	return err
-}
-
 func Run(Dispatch func(*Message)) {
-	Server = &PfcpServer{
-		Addr: context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String(),
+	addr := &net.UDPAddr{
+		IP:   net.ParseIP(context.SMF_Self().CPNodeID.ResolveNodeIdToIp().String()),
 		Port: context.SMF_Self().PFCPPort,
 	}
-
-	err := Server.Listen()
+	fmt.Println("Address: ", addr)
+	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
-		logger.PfcpLog.Errorf("Failed to listen: %v", err)
+		logger.PfcpLog.Errorf("Failed to listen on %s: %v", addr.String(), err)
+		return
 	}
-	logger.PfcpLog.Infof("Listen on %s", Server.Conn.LocalAddr().String())
+	Server = &PfcpServer{
+		Addr: addr,
+		Conn: conn,
+	}
+	logger.PfcpLog.Infof("Listen on %s", addr.String())
 
-	go func(p *PfcpServer) {
+	go func() {
 		for {
-			remoteAddr, pfcpMessage, eventData, err := ReadFrom()
+			remoteAddr, pfcpMessage, eventData, err := readPfcpMessage()
+			fmt.Println("Received message: ", remoteAddr, pfcpMessage, eventData, err)
+			if pfcpMessage != nil {
+				fmt.Println("Message type: ", pfcpMessage.MessageTypeName())
+			}
 			if err != nil {
 				if err.Error() == "Receive resend PFCP request" {
 					logger.PfcpLog.Infoln(err)
 				} else {
 					logger.PfcpLog.Warnf("Read PFCP error: %v", err)
 				}
+				continue
 			}
 			msg := NewMessage(remoteAddr, pfcpMessage, eventData)
 			go Dispatch(&msg)
 		}
-	}(Server)
+	}()
 
 	ServerStartTime = time.Now()
+}
+
+func WaitForServer() error {
+	timeout := 10 * time.Second
+	t0 := time.Now()
+	for {
+		if time.Since(t0) > timeout {
+			return fmt.Errorf("timeout waiting for PFCP server to start")
+		}
+		if Server != nil && Server.Conn != nil {
+			return nil
+		}
+		logger.PfcpLog.Infof("Waiting for PFCP server to start...")
+		time.Sleep(1 * time.Second)
+	}
 }
 
 func SendPfcp(msg message.Message, addr *net.UDPAddr, eventData interface{}) error {
@@ -124,12 +130,19 @@ func SendPfcp(msg message.Message, addr *net.UDPAddr, eventData interface{}) err
 		metrics.IncrementN4MsgStats(context.SMF_Self().NfInstanceID, msg.MessageTypeName(), "Out", "Failure", err.Error())
 		return err
 	}
-	go StartTxLifeCycle(tx)
+	go startTxLifeCycle(tx)
 	metrics.IncrementN4MsgStats(context.SMF_Self().NfInstanceID, msg.MessageTypeName(), "Out", "Success", "")
 	return nil
 }
 
-func ReadFrom() (*net.UDPAddr, message.Message, interface{}, error) {
+func readPfcpMessage() (*net.UDPAddr, message.Message, interface{}, error) {
+	if Server == nil {
+		return nil, nil, nil, fmt.Errorf("PFCP server is not initialized")
+	}
+	if Server.Conn == nil {
+		return nil, nil, nil, fmt.Errorf("PFCP server is not listening")
+	}
+
 	buf := make([]byte, PFCP_MAX_UDP_LEN)
 	n, addr, err := Server.Conn.ReadFromUDP(buf)
 	if err != nil {
@@ -145,7 +158,7 @@ func ReadFrom() (*net.UDPAddr, message.Message, interface{}, error) {
 	var eventData interface{}
 	if IsRequest(msg) {
 		// Todo: Implement SendingResponse type of reliable delivery
-		tx, err := FindTransaction(msg, addr)
+		tx, err := findTransaction(msg, addr)
 		if err != nil {
 			return addr, msg, nil, err
 		} else if tx != nil {
@@ -158,7 +171,7 @@ func ReadFrom() (*net.UDPAddr, message.Message, interface{}, error) {
 			return addr, msg, nil, nil
 		}
 	} else if IsResponse(msg) {
-		tx, err := FindTransaction(msg, Server.Conn.LocalAddr().(*net.UDPAddr))
+		tx, err := findTransaction(msg, Server.Addr)
 		if err != nil {
 			return addr, msg, nil, err
 		}
@@ -169,27 +182,24 @@ func ReadFrom() (*net.UDPAddr, message.Message, interface{}, error) {
 	return addr, msg, eventData, nil
 }
 
-func FindTransaction(msg message.Message, addr *net.UDPAddr) (*Transaction, error) {
+func findTransaction(msg message.Message, addr *net.UDPAddr) (*Transaction, error) {
 	var tx *Transaction
-
-	logger.PfcpLog.Traceln("In FindTransaction")
 	consumerAddr := addr.String()
+
+	if Server == nil {
+		return nil, fmt.Errorf("PFCP server is not initialized")
+	}
 
 	if IsResponse(msg) {
 		if _, exist := Server.ConsumerTable.Load(consumerAddr); !exist {
-			logger.PfcpLog.Warnln("In FindTransaction")
-			logger.PfcpLog.Warnf("Can't find txTable from consumer addr: [%s]", consumerAddr)
-			return nil, fmt.Errorf("FindTransaction Error: txTable not found")
+			return nil, fmt.Errorf("txTable not found")
 		}
 
 		txTable, _ := Server.ConsumerTable.Load(consumerAddr)
 		seqNum := msg.Sequence()
 
 		if _, exist := txTable.Load(seqNum); !exist {
-			logger.PfcpLog.Warnln("In FindTransaction")
-			logger.PfcpLog.Warnln("Consumer Addr: ", consumerAddr)
-			logger.PfcpLog.Warnf("Can't find tx [%d] from txTable: ", seqNum)
-			return nil, fmt.Errorf("FindTransaction Error: sequence number [%d] not found", seqNum)
+			return nil, fmt.Errorf("sequence number [%d] not found", seqNum)
 		}
 
 		tx, _ = txTable.Load(seqNum)
@@ -197,48 +207,34 @@ func FindTransaction(msg message.Message, addr *net.UDPAddr) (*Transaction, erro
 		if _, exist := Server.ConsumerTable.Load(consumerAddr); !exist {
 			return nil, nil
 		}
-
 		txTable, _ := Server.ConsumerTable.Load(consumerAddr)
 		seqNum := msg.Sequence()
-
 		if _, exist := txTable.Load(seqNum); !exist {
 			return nil, nil
 		}
-
 		tx, _ = txTable.Load(seqNum)
 	}
-	logger.PfcpLog.Traceln("End FindTransaction")
 	return tx, nil
 }
 
-func PutTransaction(tx *Transaction) (err error) {
-	logger.PfcpLog.Traceln("In PutTransaction")
-
+func PutTransaction(tx *Transaction) error {
 	consumerAddr := tx.ConsumerAddr
 	if _, exist := Server.ConsumerTable.Load(consumerAddr); !exist {
 		Server.ConsumerTable.Store(consumerAddr, &TxTable{})
 	}
-
 	txTable, _ := Server.ConsumerTable.Load(consumerAddr)
 	if _, exist := txTable.Load(tx.SequenceNumber); !exist {
 		txTable.Store(tx.SequenceNumber, tx)
 	} else {
-		logger.PfcpLog.Warnln("In PutTransaction")
-		logger.PfcpLog.Warnln("Consumer Addr: ", consumerAddr)
-		logger.PfcpLog.Warnln("Sequence number ", tx.SequenceNumber, " already exist!")
-		err = fmt.Errorf("insert tx error: duplicate sequence number %d", tx.SequenceNumber)
+		return fmt.Errorf("insert tx error: duplicate sequence number %d", tx.SequenceNumber)
 	}
-
-	logger.PfcpLog.Traceln("End PutTransaction")
-	return
+	return nil
 }
 
-func StartTxLifeCycle(tx *Transaction) {
-	// Start Transaction
+func startTxLifeCycle(tx *Transaction) {
 	sendErr := tx.Start()
 
-	// End Transaction
-	err := RemoveTransaction(tx)
+	err := removeTransaction(tx)
 	if err != nil {
 		logger.PfcpLog.Warnln(err)
 	}
@@ -257,8 +253,10 @@ func StartTxLifeCycle(tx *Transaction) {
 	}
 }
 
-func RemoveTransaction(tx *Transaction) (err error) {
-	logger.PfcpLog.Traceln("In RemoveTransaction")
+func removeTransaction(tx *Transaction) error {
+	if Server == nil {
+		return fmt.Errorf("PFCP server is not initialized")
+	}
 	consumerAddr := tx.ConsumerAddr
 	txTable, _ := Server.ConsumerTable.Load(consumerAddr)
 
@@ -272,12 +270,7 @@ func RemoveTransaction(tx *Transaction) (err error) {
 
 		txTable.Delete(tx.SequenceNumber)
 	} else {
-		logger.PfcpLog.Warnln("In RemoveTransaction")
-		logger.PfcpLog.Warnln("Consumer IP: ", consumerAddr)
-		logger.PfcpLog.Warnln("Sequence number ", tx.SequenceNumber, " doesn't exist!")
-		err = fmt.Errorf("remove tx error: transaction [%d] doesn't exist", tx.SequenceNumber)
+		return fmt.Errorf("remove tx error: transaction [%d] doesn't exist", tx.SequenceNumber)
 	}
-
-	logger.PfcpLog.Traceln("End RemoveTransaction")
-	return
+	return nil
 }
