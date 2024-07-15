@@ -427,9 +427,9 @@ func (dpNode *DataPathNode) CreatePccRuleQer(smContext *SMContext, qosData strin
 	tc := qos.GetTcDataFromPolicyDecision(smPolicyDec, tcData)
 
 	// Get Flow Status
-	gateStatus := pfcpType.GateOpen
+	gateStatus := GateOpen
 	if tc != nil && tc.FlowStatus == models.FlowStatus_DISABLED {
-		gateStatus = pfcpType.GateClose
+		gateStatus = GateClose
 	}
 
 	var flowQER *QER
@@ -441,7 +441,7 @@ func (dpNode *DataPathNode) CreatePccRuleQer(smContext *SMContext, qosData strin
 		newQER.QFI.QFI = qos.GetQosFlowIdFromQosId(refQos.QosId)
 
 		// Flow Status
-		newQER.GateStatus = &pfcpType.GateStatus{
+		newQER.GateStatus = &GateStatus{
 			ULGate: gateStatus,
 			DLGate: gateStatus,
 		}
@@ -472,9 +472,9 @@ func (dpNode *DataPathNode) CreateSessRuleQer(smContext *SMContext) (*QER, error
 		return nil, err
 	} else {
 		newQER.QFI.QFI = qos.GetQosFlowIdFromQosId(defQosData.QosId)
-		newQER.GateStatus = &pfcpType.GateStatus{
-			ULGate: pfcpType.GateOpen,
-			DLGate: pfcpType.GateOpen,
+		newQER.GateStatus = &GateStatus{
+			ULGate: GateOpen,
+			DLGate: GateOpen,
 		}
 		newQER.MBR = &pfcpType.MBR{
 			ULMBR: util.BitRateTokbps(sessionRule.AuthSessAmbr.Uplink),

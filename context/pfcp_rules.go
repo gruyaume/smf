@@ -77,7 +77,7 @@ type BAR struct {
 
 // QoS Enhancement Rule
 type QER struct {
-	GateStatus *pfcpType.GateStatus
+	GateStatus *GateStatus
 	MBR        *pfcpType.MBR
 	GBR        *pfcpType.GBR
 
