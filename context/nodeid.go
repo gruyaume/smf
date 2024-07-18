@@ -47,7 +47,7 @@ func NewNodeID(nodeID string) *NodeID {
 func (n *NodeID) ResolveNodeIdToIp() net.IP {
 	switch n.NodeIdType {
 	case NodeIdTypeIpv4Address, NodeIdTypeIpv6Address:
-		return net.IP(n.NodeIdValue)
+		return n.NodeIdValue
 	case NodeIdTypeFqdn:
 		if ip, err := getDnsHostIp(string(n.NodeIdValue)); err != nil {
 			logger.CtxLog.Warnf("host [%v] not found in smf dns cache ", string(n.NodeIdValue))

@@ -22,10 +22,6 @@ func (f *Flag) SetBit(position uint8) {
 	*f |= 1 << (position - 1)
 }
 
-func BoolPointer(b bool) *bool {
-	return &b
-}
-
 func CreateFlags(v4 bool, v6 bool, ni bool, si bool) uint8 {
 	flags := new(Flag)
 	if v4 {

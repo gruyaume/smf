@@ -71,7 +71,7 @@ func UnmarshalUEIPInformationBinary(data []byte) (*context.UserPlaneIPResourceIn
 		if length < idx+net.IPv4len {
 			return nil, fmt.Errorf("inadequate TLV length: %d", length)
 		}
-		u.Ipv4Address = net.IP(data[idx : idx+net.IPv4len])
+		u.Ipv4Address = data[idx : idx+net.IPv4len]
 		idx = idx + net.IPv4len
 	}
 
@@ -80,7 +80,7 @@ func UnmarshalUEIPInformationBinary(data []byte) (*context.UserPlaneIPResourceIn
 		if length < idx+net.IPv6len {
 			return nil, fmt.Errorf("inadequate TLV length: %d", length)
 		}
-		u.Ipv6Address = net.IP(data[idx : idx+net.IPv6len])
+		u.Ipv6Address = data[idx : idx+net.IPv6len]
 		idx = idx + net.IPv6len
 	}
 
