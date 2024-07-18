@@ -98,6 +98,9 @@ func RetrieveDnnInformation(Snssai models.Snssai, dnn string) *SnssaiSmfDnnInfo 
 }
 
 func AllocateLocalSEID() (uint64, error) {
+	if smfContext.DrsmCtxts.SeidPool == nil {
+		return 0, fmt.Errorf("SEID pool is not initialized")
+	}
 	seid32, err := smfContext.DrsmCtxts.SeidPool.AllocateInt32ID()
 	if err != nil {
 		logger.CtxLog.Errorf("allocate SEID error: %+v", err)

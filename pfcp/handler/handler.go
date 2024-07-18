@@ -432,6 +432,10 @@ func HandlePfcpSessionEstablishmentResponse(msg *udp.Message) {
 		}
 	}
 	smContext := smf_context.GetSMContextBySEID(SEID)
+	// if smContext == nil {
+	// 	logger.PfcpLog.Errorf("Failed to find SMContext for SEID[%d]", SEID)
+	// 	return
+	// }
 	smContext.SMLock.Lock()
 
 	// Get NodeId from Seq:NodeId Map
